@@ -1,2 +1,1 @@
-from backend.models.user import User
-from backend.models.goal import Goal
+from backend.models import User, Goal
