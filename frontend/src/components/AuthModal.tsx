@@ -3,6 +3,7 @@ import { useState } from "react";
 import { login, signup } from "@/api/auth";
 
 export default function AuthModal({ mode, onClose }: { mode: "login" | "signup", onClose: () => void }) {
+  const [username, setUsername] = useState("")
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -12,7 +13,7 @@ export default function AuthModal({ mode, onClose }: { mode: "login" | "signup",
     try {
       const data = mode === "login"
         ? await login(email, password)
-        : await signup(email, password);
+        : await signup(username, email, password);
 
       localStorage.setItem("token", data.access_token || "");
       alert(`${mode === "login" ? "Logged in" : "Signed up"} successfully!`);
@@ -26,6 +27,16 @@ export default function AuthModal({ mode, onClose }: { mode: "login" | "signup",
     <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-4 w-80">
         <h2 className="text-xl font-semibold">{mode === "login" ? "Sign In" : "Sign Up"}</h2>
+        {mode === "signup" ? (
+          <input
+          type="username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          placeholder="Username"
+          className="border rounded px-3 py-2 w-full"
+          required
+        />
+        ) : null}
         <input
           type="email"
           value={email}

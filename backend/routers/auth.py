@@ -12,6 +12,7 @@ def signup(user: schemas.UserCreate, db: Session=Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
     
     new_user = models.User(
+        username=user.username,
         email=user.email,
         hashed_password=hash_password(user.password),
     )
