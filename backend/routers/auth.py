@@ -27,5 +27,5 @@ def login(user: schemas.UserLogin, db: Session=Depends(get_db)):
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    token = create_access_token({"sub": db_user.email})
+    token = create_access_token({"sub": db_user.email, "username": db_user.username})
     return {"access_token": token, "token_type": "bearer"}
