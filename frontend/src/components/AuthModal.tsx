@@ -15,8 +15,7 @@ export default function AuthModal({ mode, onClose }: { mode: "login" | "signup",
         ? await login(email, password)
         : await signup(username, email, password);
 
-      localStorage.setItem("token", data.access_token || "");
-      alert(`${mode === "login" ? "Logged in" : "Signed up"} successfully!`);
+      localStorage.setItem("token", data.access_token);
       onClose();
     } catch (err: any) {
       setError(err.message);

@@ -1,3 +1,4 @@
 .vscode
 backend/.env
+backend/alembic
 **/__pycache__/

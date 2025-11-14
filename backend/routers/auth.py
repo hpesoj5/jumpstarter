@@ -19,7 +19,8 @@ def signup(user: schemas.UserCreate, db: Session=Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    return {"message": f"User with email {new_user.email} created successfully"}
+    token = create_access_token({"sub": user.email, "username": user.username})
+    return {"access_token": token, "token_type": "bearer"}
 
 @router.post("/login")
 def login(user: schemas.UserLogin, db: Session=Depends(get_db)):
