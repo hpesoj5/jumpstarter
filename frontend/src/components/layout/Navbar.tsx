@@ -67,7 +67,6 @@ export default function Navbar() {
               {userMenu && (
                 <div
                   className="absolute right-0 mt-2 bg-white border rounded-lg shadow-md w-40"
-                  tabIndex={-1}
                   ref={ref}>
                   <button
                     onClick={() => {
