@@ -11,5 +11,7 @@ class UserLogin(UserBase):
 
 class User(UserBase):
     id: int
+    session_id: int 
+    
     class Config:
         from_attributes = True

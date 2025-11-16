@@ -1,1 +1,2 @@
 from .auth import hash_password, verify_password, create_access_token
+from .db_utils import add_message_to_history, get_last_message, get_chat_history, get_user_session_details, clear_chat_history, reset_session

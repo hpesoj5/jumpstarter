@@ -1,2 +1,3 @@
-from .goal import Goal
+from .goal import Goal, Phase, Prerequisite
 from .user import User
+from .chat import ChatSession, ChatHistory

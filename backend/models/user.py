@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from backend.db.session import Base
 
@@ -9,3 +9,8 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
 
     goals = relationship("Goal", back_populates="owner")
+
+    session_id = Column(Integer,
+        ForeignKey('chat_sessions.session_id', ondelete='CASCADE'), 
+        nullable=False
+    )
