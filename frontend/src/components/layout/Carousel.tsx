@@ -60,20 +60,20 @@ export const Carousel: React.FC<CarouselProps> = ({
     let cursor: 'pointer' | 'default' = 'default';
 
     if (index === currentIndex) {
-        className += " z-30 scale-100 translate-x-0";
+        className += " z-[2] scale-100 translate-x-0";
         opacity = 1;
         cursor = 'default';
     } else if (index === prevIndex) {
-        className += " z-20 scale-90 -translate-x-[18%] rotate-[-6deg] hover:scale-[0.92]";
+        className += " z-[1] scale-90 -translate-x-[18%] rotate-[-6deg] hover:scale-[0.92]";
         opacity = 0.6;
         cursor = 'pointer';
     } else if (index === nextIndex) {
-        className += " z-20 scale-90 translate-x-[18%] rotate-[6deg] hover:scale-[0.92]";
+        className += " z-[1] scale-90 translate-x-[18%] rotate-[6deg] hover:scale-[0.92]";
         opacity = 0.6;
         cursor = 'pointer';
     }
     if (opacity === 0) {
-        className += " z-0 scale-70 translate-x-0";
+        className += " z-[0] scale-70 translate-x-0";
         opacity = 0;
     }
 
@@ -110,7 +110,7 @@ export const Carousel: React.FC<CarouselProps> = ({
       </div>
 
       {/* --- Dot Navigation --- */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-50">
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-[4]">
         {images.map((_, index) => (
           <button
             key={index}

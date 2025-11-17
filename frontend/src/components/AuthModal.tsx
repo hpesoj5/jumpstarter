@@ -23,7 +23,7 @@ export default function AuthModal({ mode, onClose }: { mode: "login" | "signup",
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[100]">
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-4 w-80">
         <h2 className="text-xl font-semibold">{mode === "login" ? "Sign In" : "Sign Up"}</h2>
         {mode === "signup" ? (

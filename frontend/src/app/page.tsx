@@ -1,7 +1,19 @@
 "use client"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Carousel } from "@/components/layout/Carousel";
+import AuthModal from "@/components/AuthModal";
 
 export default function HomePage() {
+  const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      useRouter().push("/dashboard"); // redirect signed-in users
+    }
+  }, []);
+  
   return (
     <div className="flex flex-col md:flex-row pt-32 pb-28 bg-gradient-to-b from-blue-50 to-white overflow-hidden">
         <div className="max-w-6xl mx-auto text-left mb-8 px-6">
@@ -14,10 +26,12 @@ export default function HomePage() {
             Track your progress. Stay motivated. Take actionable steps toward your goals!<br/>
           </p>
           <div className="mt-8 flex justify-left gap-4">
-            <button className="px-6 py-3 bg-indigo-600 text-white rounded-md text-lg hover:bg-indigo-800">
+            <button className="px-6 py-3 bg-indigo-600 text-white rounded-md text-lg hover:bg-indigo-800"
+              onClick={() => setAuthMode("signup")}>
               Sign Up for Free
             </button>
-            <button className="px-6 py-3 bg-gray-200 text-gray-800 rounded-md text-lg hover:bg-gray-300">
+            <button className="px-6 py-3 bg-gray-200 text-gray-800 rounded-md text-lg hover:bg-gray-300"
+              onClick={() => setAuthMode("login")}>
               Log In
             </button>
           </div>
@@ -31,6 +45,12 @@ export default function HomePage() {
           "https://cdn.stickerrs.com/StickerPacks/tQsH9FxPP7CQJvy9cIb3/ED79660D-46F3-4740-B6F1-616A638D56F8_100x100.png",
         ]}
         />
+        {authMode && (
+          <AuthModal
+            mode={authMode}
+            onClose={() => setAuthMode(null)}
+          />
+        )}
     </div>
   );
 }

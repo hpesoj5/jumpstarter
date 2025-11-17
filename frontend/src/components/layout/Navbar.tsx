@@ -83,8 +83,7 @@ export default function Navbar() {
           )}
         </div>
     </header>
-    {authMode && (
-      <AuthModal
+    {authMode && (<AuthModal 
         mode={authMode}
         onClose={() => {
           setAuthMode(null);
