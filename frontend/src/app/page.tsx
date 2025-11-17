@@ -6,16 +6,17 @@ import AuthModal from "@/components/AuthModal";
 
 export default function HomePage() {
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
-      useRouter().push("/dashboard"); // redirect signed-in users
+      router.push("/dashboard"); // redirect signed-in users
     }
   }, []);
   
   return (
-    <div className="flex flex-col md:flex-row pt-32 pb-28 bg-gradient-to-b from-blue-50 to-white overflow-hidden">
+    <div className="flex flex-col md:flex-row h-full pt-32 pb-28 bg-gradient-to-b from-white to-indigo-400 overflow-hidden">
         <div className="max-w-6xl mx-auto text-left mb-8 px-6">
           <h2 className="text-5xl font-extrabold leading-tight">Build Your Tomorrow,</h2>
           <h2 className="text-5xl font-extrabold text-indigo-600 leading-tight">Today.</h2>
