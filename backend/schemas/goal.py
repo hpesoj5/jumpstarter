@@ -56,12 +56,9 @@ class Constraints(BaseModel):
     available_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Tuesday 7pm-9pm') when the user is free to work on the goal.")
     dependencies: List[str] = Field(description="A list of external requirements that must be met before the goal can progress (e.g., 'Wait for equipment delivery').")
 
-class GoalPrerequisites(BaseModel):
+class GoalPrerequisites(CurrentState, FixedResources, Constraints):
     """The complete structure for all prerequisites."""
     status: Literal['prerequisites_extracted'] = 'prerequisites_extracted'
-    current_state: CurrentState
-    fixed_resources: FixedResources
-    constraints: Constraints
 
 class PhaseBase(BaseModel):
     title: str = Field(
