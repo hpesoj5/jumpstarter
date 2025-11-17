@@ -47,12 +47,12 @@ export default function Navbar() {
             <div className="flex gap-3">
               <button
                 onClick={() => setAuthMode("login")}
-                className="whitespace-nowrap border rounded px-3 py-1 text-black bg-gray-100 hover:bg-gray-200 transition">
+                className="whitespace-nowrap border rounded-md px-3 py-1 text-gray-800 bg-gray-200 hover:bg-gray-300 transition">
                 Log In
               </button>
               <button
                 onClick={() => setAuthMode("signup")}
-                className="whitespace-nowrap border rounded px-3 py-1 w-full bg-indigo-600 text-white hover:bg-indigo-800 transition">
+                className="whitespace-nowrap border rounded-md px-3 py-1 w-full bg-indigo-600 text-white hover:bg-indigo-800 transition">
                 Sign Up
               </button>
             </div>
