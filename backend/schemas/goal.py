@@ -6,17 +6,7 @@ from datetime import date
 class FollowUp(BaseModel):
     status: Literal['follow_up_required'] = 'follow_up_required'
     question_to_user: str = Field(description="A single, specific, question to the user.")
-
-# for FastAPI to return
-class APIResponse(BaseModel):
-    session_id: str
-    data: Any # 'Any' will be replaced by specific phase-related models
-
-# --- Request Model ---
-class APIRequest(BaseModel):
-    user_input: str
-    session_id: str | None = None
-
+    
 class DefinitionsBase(BaseModel):
     status: Literal['definitions_extracted'] = 'definitions_extracted'
     title: str = Field(description="The specific goal to achieve")
@@ -106,3 +96,14 @@ class DailyRead(DailyBase):
 
     class Config:
         from_attributes = True
+        
+# for FastAPI to return
+class APIResponse(BaseModel):
+    session_id: str
+    data: FollowUp | DefinitionsCreate | GoalPrerequisites | PhaseGeneration  # more specific phase-related models will be added
+
+# --- Request Model ---
+class APIRequest(BaseModel):
+    user_input: str
+    session_id: str | None = None
+    phase: str
