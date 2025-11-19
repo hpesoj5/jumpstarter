@@ -3,3 +3,4 @@ backend/.env
 backend/alembic
 backend/alembic.ini
 **/__pycache__/
+notebooks
