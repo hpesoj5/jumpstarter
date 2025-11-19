@@ -28,8 +28,8 @@ class Definitions(DefinitionsBase):
 class CurrentState(BaseModel):
     """Details about the user's starting point and gaps."""
     skill_level: str = Field(description="The user's current skill level related to the goal.")
-    related_experience: str = Field(description="Relevant past experience or projects.")
-    resources_available: str = Field(description="Current readily available resources (tools, software, people).")
+    related_experience: List[str] = Field(description="Relevant past experience or projects.")
+    resources_available: List[str] = Field(description="Current readily available resources (tools, software, people).")
     user_gap_assessment: List[str] = Field(description="A list of problems or missing skills the user has identified.")
     possible_gap_assessment: List[str] = Field(description="A list of problems or missing skills identified by the LLM (optional, for planning assistance).")
 
