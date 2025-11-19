@@ -11,9 +11,9 @@ export const useAuth = () => {
     setLoading(false);
   };
 
-  const signup = async (email: string, password: string) => {
+  const signup = async (username: string, email: string, password: string) => {
     setLoading(true);
-    await api.post("/auth/signup", { email, password });
+    await api.post("/auth/signup", { username, email, password });
     setLoading(false);
   };
 
