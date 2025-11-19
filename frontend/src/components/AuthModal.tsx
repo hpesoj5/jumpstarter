@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { login, signup } from "@/api/auth";
 
 export default function AuthModal({ mode, onClose }: { mode: "login" | "signup", onClose: () => void }) {
@@ -7,6 +8,7 @@ export default function AuthModal({ mode, onClose }: { mode: "login" | "signup",
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const router = useRouter();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -16,6 +18,8 @@ export default function AuthModal({ mode, onClose }: { mode: "login" | "signup",
         : await signup(username, email, password);
 
       localStorage.setItem("token", data.access_token);
+      window.dispatchEvent(new Event("storage"));
+      router.push("/dashboard");
       onClose();
     } catch (err: any) {
       setError(err.message);
@@ -23,7 +27,7 @@ export default function AuthModal({ mode, onClose }: { mode: "login" | "signup",
   }
 
   return (
-    <div className="fixed inset-0 bg-black/40 flex justify-center items-center">
+    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex justify-center items-center z-[100]">
       <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md space-y-4 w-80">
         <h2 className="text-xl font-semibold">{mode === "login" ? "Sign In" : "Sign Up"}</h2>
         {mode === "signup" ? (
