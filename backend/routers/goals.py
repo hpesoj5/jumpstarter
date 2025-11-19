@@ -45,7 +45,7 @@ ResponseSchema = Union[schemas.DefinitionsCreate, schemas.FollowUp]
 router = APIRouter(prefix="/goals", tags=["Goals"])
 
 @router.post("/define", response_model=schemas.APIResponse)
-def define_goal(goal_request: schemas.GoalRequest, db: Session = Depends(get_db)):
+def define_goal(goal_request: schemas.APIRequest, db: Session = Depends(get_db)):
     # Session exists; follow up questions
     if goal_request.session_id and goal_request.session_id in chat_sessions:
         session_id = goal_request.session_id
