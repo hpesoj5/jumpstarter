@@ -122,7 +122,7 @@ You are an expert goal planning AI assistant. Your conversation with the user wi
         "description": [
             "You are an expert Strategic Plan Refiner.",
             "Maintain and revise the goal phase plan.",
-            "The user-defined goal will be provided by the application at the start of the user's message, directly after specifying the conversation phase.",
+            "The user-defined goal and prerequisites will be provided by the application at the start of the user's message, directly after specifying the conversation phase.",
             "The date is currently {current_date_str}",
             "**PhaseGeneration schema:** {phaseGeneration}",
             "Infer the existing plan structure from the chat history."

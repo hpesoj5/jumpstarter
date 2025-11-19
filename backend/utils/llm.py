@@ -30,7 +30,7 @@ def query(api_request: schemas.APIRequest, chat_sessions: dict) -> schemas.APIRe
     """
     Sends a query to the LLM and returns the response schema.
     """
-    chat_exists, session_id = get_session_id(api_request, chat_sessions) # check if a chat exists and returns the session id of the new or existing chat
+    chat_exists, session_id = get_session_id(api_request, chat_sessions)
     
     if chat_exists: # restore chat history
         chat: Chat = chat_sessions[session_id]
@@ -59,12 +59,12 @@ def query(api_request: schemas.APIRequest, chat_sessions: dict) -> schemas.APIRe
     else:
         raise HTTPException(status_code=500, detail="LLM API Error: chat with LLM does not exist")
     
-    try: # user interaction with Gemini API
+    try:
         message = f'CURRENT_PHASE = "{api_request.phase}"\n{api_request.user_input}'
         response = chat.send_message(message)
         results = response.parsed
         chat_sessions[session_id] = chat
-        return schemas.APIResponse(session_id=session_id, data=results) # should modify chat_sessions in place as well
+        return schemas.APIResponse(session_id=session_id, data=results)
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM API Error: {e}")
@@ -73,56 +73,45 @@ def main(): # to test the ability of the LLM to have a chat with the user result
     chat_sessions = {}
   
     # DEFINING THE GOAL
-    
-    # Initial prompt
     print("What do you want to do?")
     user_input = f'I want to {input("I want to:\n")}'
     api_request = schemas.APIRequest(user_input=user_input, phase="define_goal")
     api_response = query(api_request, chat_sessions)
     
-    # Follow up prompts
     while api_response.data.status == "follow_up_required":
         api_request.user_input = input(f"{api_response.data.question_to_user}\n")
         api_response = query(api_request, chat_sessions)
 
-    # Checking if response is of the correct type
     goal = api_response.data
     if not isinstance(goal, schemas.DefinitionsCreate):
         print(f"LLM returned an unexpected format. Expected schemas.DefinitionsCreate, got {type(goal)}")
         return
+    print(goal.model_dump_json())
 
     # GETTING USER PREREQUISITES
     api_request.phase = "get_prerequisites"
-    # Initial prompt
     api_request.user_input = f'My goal is {goal.model_dump_json()}\nWhat prerequisites do you need from me?'
     api_response = query(api_request, chat_sessions)
     
-    # Follow up prompts
     while api_response.data.status == "follow_up_required":
         api_request.user_input = input(f"{api_response.data.question_to_user}\n")
         api_response = query(api_request, chat_sessions)
     
-    # Checking if response is of the correct type
     prerequisites = api_response.data    
     if not isinstance(prerequisites, schemas.GoalPrerequisites):
         print(f"LLM returned an unexpected format. Expected schemas.DefinitionsCreate, got {type(prerequisites)}")
         return
     
-    # print(response)
     # GENERATING PLAN PHASES
     api_request.phase = "generate_phases"
-    
-    # Initial prompt
     api_request.user_input = f'My goal is {goal.model_dump_json()}\nMy prerequisites are {prerequisites.model_dump_json()}\nWhat should the plan look like?'
     api_response = query(api_request, chat_sessions)
     
-    # Check if response is of the correct type
     phases = api_response.data
     if not isinstance(phases, schemas.PhaseGeneration):
         print(f"LLM returned an unexpected format. Expected schemas.PhaseGeneration, got {type(phases)}")
         return
     
-    print(phases.model_dump_json())
     
 if __name__ == "__main__":
     main()
