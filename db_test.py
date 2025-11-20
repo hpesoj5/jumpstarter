@@ -163,7 +163,7 @@ def update_session_prereq(session: ChatSession, prereq, db: Session=Depends(get_
     
 def update_session_phases(session: ChatSession, phases, db: Session=Depends(get_db)):
     try:
-        session.phases_obj_obj = phases
+        session.phases_obj = phases
         
         db.add(session)
         db.commit()
@@ -209,7 +209,7 @@ def insert_goal(goal_data, prereq_data, user_id, db: Session=Depends(get_db)): #
         print("error with inserting goals: ", e)
         return False
 
-def insert_phases(phases_data: PhaseGeneration, goal_id: int, db: Session=Depends(get_db)):
+def insert_phases(phases_data, goal_id, db: Session=Depends(get_db)):
     try:
         db_phases_list = []
         
@@ -303,6 +303,7 @@ user_session = get_user_session(uid, conn)
 # update_session_prereq(user_session, prereq_json, conn)
 # update_session_phases(user_session, phases_json, conn)
 # db_goal = insert_goal(goal_json, prereq_json, uid, conn)
-print(pickle.loads(user_session.session_data))
-update_session_data(user_session, chat_history, conn)
-print(pickle.loads(user_session.session_data))
+db_phases = insert_phases(phases_json, 1, conn)
+# print(pickle.loads(user_session.session_data))
+# update_session_data(user_session, chat_history, conn)
+# print(pickle.loads(user_session.session_data))
