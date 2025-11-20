@@ -36,8 +36,9 @@ class Phase(Base):
     __tablename__ = "phases"
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
-    description = Column(Text, nullable=True)
-    estimated_end_date = Column(Date, nullable=True)
+    description = Column(Text, nullable=False)
+    start_date = Column(Date, nullable=False)
+    estimated_end_date = Column(Date, nullable=False)
     is_completed = Column(Boolean, default=False)
     
     goal_id = Column(Integer, ForeignKey("goals.id"), nullable=False, index=True) 
@@ -48,7 +49,7 @@ class Daily(Base):
     __tablename__ = "dailies"
     id = Column(Integer, primary_key=True, index=True)
     task_description = Column(String, nullable=False)
-    estimated_time_minutes = Column(Integer, nullable=True)
+    estimated_time_minutes = Column(Integer, nullable=False)
     is_completed = Column(Boolean, default=False)
     
     phase_id = Column(Integer, ForeignKey("phases.id"), nullable=False, index=True) 

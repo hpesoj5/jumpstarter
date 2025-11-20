@@ -17,13 +17,6 @@ class DefinitionsBase(BaseModel):
 class DefinitionsCreate(DefinitionsBase):
     status: Literal['definitions_extracted'] = 'definitions_extracted'
     # are you doing something with this, judging from your other create schemas
-    
-class Definitions(DefinitionsBase):
-    id: int
-    prerequisites: str # Includes the data expected from Phase 2
-    
-    class Config:
-        from_attributes = True
 
 class CurrentState(BaseModel):
     """Details about the user's starting point and gaps."""
@@ -37,8 +30,8 @@ class FixedResources(BaseModel):
     """Non-negotiable resource constraints."""
     time_commitment_per_week_hours: float = Field(description="The number of hours the user can reliably commit per week.")
     budget: float = Field(description="The monetary budget available for the goal (in the user's local currency, e.g., 'USD').")
-    required_equipment: str = Field(description="Specific equipment or materials needed to start or complete the goal.")
-    support_system: str = Field(description="People or groups available for emotional or practical support.")
+    required_equipment: List[str] = Field(description="Specific equipment or materials needed to start or complete the goal.")
+    support_system: List[str] = Field(description="People or groups available for emotional or practical support.")
 
 class Constraints(BaseModel):
     """Scheduling and external limitations."""
@@ -49,6 +42,13 @@ class Constraints(BaseModel):
 class GoalPrerequisites(CurrentState, FixedResources, Constraints):
     """The complete structure for all prerequisites."""
     status: Literal['prerequisites_extracted'] = 'prerequisites_extracted'
+
+class Definitions(DefinitionsBase):
+    id: int
+    prerequisites: GoalPrerequisites # Includes the data expected from Phase 2
+    
+    class Config:
+        from_attributes = True
 
 class PhaseBase(BaseModel):
     title: str = Field(

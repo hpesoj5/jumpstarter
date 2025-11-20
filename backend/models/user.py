@@ -10,5 +10,5 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
 
     session_id = Column(Integer, ForeignKey("sessions.id"), index=True, nullable=True)
-    session = relationship("Session", back_populates="user")
+    session = relationship("ChatSession", back_populates="user")
     goals = relationship("Goal", back_populates="owner")
