@@ -303,7 +303,41 @@ user_session = get_user_session(uid, conn)
 # update_session_prereq(user_session, prereq_json, conn)
 # update_session_phases(user_session, phases_json, conn)
 # db_goal = insert_goal(goal_json, prereq_json, uid, conn)
-db_phases = insert_phases(phases_json, 1, conn)
+# db_phases = insert_phases(phases_json, 1, conn)
 # print(pickle.loads(user_session.session_data))
 # update_session_data(user_session, chat_history, conn)
 # print(pickle.loads(user_session.session_data))
+chat_history = pickle.loads(user_session.session_data)
+new_user_text = "I want to test the chat history functions, and a successful outcome is being able to use the history to restore a chat."
+new_user_message = Content(
+    parts=[Part.from_text(text=new_user_text)],
+    role='user'
+)
+chat_history.append(new_user_message)
+
+responseSchema = FollowUp | DefinitionsCreate | GoalPrerequisites | PhaseGeneration
+client = genai.Client(api_key=GOOGLE_API_KEY)
+DATE_FORMAT = '%Y-%m-%d'
+current_date_str = date.today().strftime(DATE_FORMAT)
+response = client.models.generate_content(
+    model='gemini-2.5-flash-lite',
+    contents = chat_history,
+    config={
+        "system_instruction": SYSTEM_INSTRUCTION.format(
+            current_date_str=current_date_str,
+            followUp=FollowUp.model_json_schema(),
+            definitionsCreate=DefinitionsCreate.model_json_schema(),
+            goalPrerequisites=GoalPrerequisites.model_json_schema(),
+            currentState=CurrentState.model_json_schema(),
+            fixedResources=FixedResources.model_json_schema(),
+            constraints=Constraints.model_json_schema(),
+            phaseGeneration=PhaseGeneration.model_json_schema(),
+        ),
+        "response_mime_type": "application/json",
+        "response_schema": responseSchema,
+    },
+)
+# print(response.parsed)
+# chat_history.append(response.candidates[0].content)
+# print(chat_history)
+print(response)
