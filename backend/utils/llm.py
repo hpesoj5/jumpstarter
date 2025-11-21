@@ -17,7 +17,7 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 client = genai.Client(api_key=GOOGLE_API_KEY)
 DATE_FORMAT = '%Y-%m-%d'
 model = 'gemini-2.5-flash-lite'
-responseSchema = schemas.FollowUp | schemas.DefinitionsCreate | schemas.GoalPrerequisites | schemas.PhaseGeneration
+responseSchema = schemas.FollowUp | schemas.DefinitionsCreate | schemas.GoalPrerequisites | schemas.PhaseGeneration | schemas.DailiesGeneration
 
 def get_session_id(api_request: schemas.APIRequest, chat_sessions: dict) -> tuple[bool, str]:
     if api_request.session_id and api_request.session_id in chat_sessions:
@@ -36,19 +36,15 @@ def query(api_request: schemas.APIRequest, chat_sessions: dict) -> schemas.APIRe
         chat: Chat = chat_sessions[session_id]
         
     elif api_request.phase == "define_goal": # the user has not chatted with the bot before
-        current_date_str = date.today().strftime(DATE_FORMAT)
         chat = client.chats.create(
             model=model,
             config={
                 "system_instruction": SYSTEM_INSTRUCTION.format(
-                    current_date_str=current_date_str,
                     followUp=schemas.FollowUp.model_json_schema(),
                     definitionsCreate=schemas.DefinitionsCreate.model_json_schema(),
                     goalPrerequisites=schemas.GoalPrerequisites.model_json_schema(),
-                    currentState=schemas.CurrentState.model_json_schema(),
-                    fixedResources=schemas.FixedResources.model_json_schema(),
-                    constraints=schemas.Constraints.model_json_schema(),
                     phaseGeneration=schemas.PhaseGeneration.model_json_schema(),
+                    dailiesGeneration=schemas.DailiesGeneration.model_json_schema(),
                 ),
                 "response_mime_type": "application/json",
                 "response_schema": responseSchema,
@@ -60,7 +56,8 @@ def query(api_request: schemas.APIRequest, chat_sessions: dict) -> schemas.APIRe
         raise HTTPException(status_code=500, detail="LLM API Error: chat with LLM does not exist")
     
     try:
-        message = f'CURRENT_PHASE = "{api_request.phase}"\n{api_request.user_input}'
+        current_date_str = date.today().strftime(DATE_FORMAT)
+        message = f'CURRENT_PHASE = "{api_request.phase}"\ncurrent_date = {current_date_str}\n{api_request.user_input}'
         response = chat.send_message(message)
         results = response.parsed
         chat_sessions[session_id] = chat
@@ -73,7 +70,7 @@ def main(): # to test the ability of the LLM to have a chat with the user result
     chat_sessions = {}
   
     # DEFINING THE GOAL
-    print("What do you want to do?")
+    print("What do you want to achieve?")
     user_input = f'I want to {input("I want to:\n")}'
     api_request = schemas.APIRequest(user_input=user_input, phase="define_goal")
     api_response = query(api_request, chat_sessions)
@@ -112,6 +109,19 @@ def main(): # to test the ability of the LLM to have a chat with the user result
         print(f"LLM returned an unexpected format. Expected schemas.PhaseGeneration, got {type(phases)}")
         return
     
+    print(phases.model_dump_json())
+    # SKIP PHASE REFINING FOR NOW
+    
+    # GENERATING DAILY TASKS
+    api_request.phase = "generate_dailies"
+    api_request.user_input = f'My goal is {goal.model_dump_json()}\nMy prerequisites are {prerequisites.model_dump_json()}\nThe overall plan is {phases.model_dump_json()}\nThe current phase is 1\nCan you generate a daily schedule for me?'
+    api_response = query(api_request, chat_sessions)
+    
+    dailies = api_response.data
+    if not isinstance(dailies, schemas.DailiesGeneration):
+        print(f"LLM returned an unexpected format. Excepted schemas.DailiesGeneration, got {type(dailies)}")
+    
+    print(dailies.model_dump_json())
     
 if __name__ == "__main__":
     main()
