@@ -7,7 +7,7 @@ import { useClickAway } from "@uidotdev/usehooks";
 import AuthModal from "@/components/AuthModal";
 
 type TokenPayload = {
-  sub?: string,
+  uid?: number,
   username?: string,
   exp?: number, //convert to JS date by calling new Date(exp * 1000)
   iat?: number
@@ -44,7 +44,7 @@ export default function Navbar() {
       {/* Right - User */}
       <div className="relative flex justify-end w-32">
           {username === "" ? ( // not signed in
-            <div className="flex gap-3">
+            <div>
               <button
                 onClick={() => setAuthMode("login")}
                 className="whitespace-nowrap border rounded px-3 py-1 text-black bg-gray-100 hover:bg-gray-200 transition">

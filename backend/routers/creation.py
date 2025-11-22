@@ -33,7 +33,7 @@ class APIRequest(BaseModel):
     user_id: int | None = None
     user_input: str
 
-class confirmRequest(BaseModel):
+class ConfirmRequest(BaseModel):
     user_id: int | None = None
     confirm_obj: DefinitionsCreate | GoalPrerequisites | PhaseGeneration # goal prereq only used by backend to transition
 
@@ -42,7 +42,7 @@ router = APIRouter(prefix="/create", tags=["Goals"])
 
 @router.post("/load", response_model=APIResponse)
 def load(request: APIRequest, db: Session = Depends(get_db)):
-    if request.user_id == None:
+    if request.user_id == None or request.user_id == -1:
         raise HTTPException(status_code=500, detail=f"User not signed in")
         
     else:
@@ -66,7 +66,7 @@ def query(request: APIRequest, db: Session = Depends(get_db)):
 
         if isinstance(response_parsed, GoalPrerequisites): # auto transition
             print(response_parsed)
-            confirm_request = confirmRequest(user_id=request.user_id, confirm_obj=response_parsed)
+            confirm_request = ConfirmRequest(user_id=request.user_id, confirm_obj=response_parsed)
             return confirm(confirm_request, db)
         
         elif isinstance(response_parsed, PhaseGeneration):
@@ -74,7 +74,7 @@ def query(request: APIRequest, db: Session = Depends(get_db)):
         return response_parsed
     
 @router.post("/confirm", response_model=APIResponse)
-def confirm(request: confirmRequest, db: Session = Depends(get_db)):
+def confirm(request: ConfirmRequest, db: Session = Depends(get_db)):
     if request.user_id == None:
         raise HTTPException(status_code=500, detail=f"User not signed in")
         
@@ -88,12 +88,11 @@ def confirm(request: confirmRequest, db: Session = Depends(get_db)):
         elif isinstance(request.confirm_obj, GoalPrerequisites):
             update_session_prereq(user_db_session, request.confirm_obj, db)
             update_session_phase_tag(user_db_session, "generate_phases", db)
-            print(user_db_session.goal_obj)
             transition = APIRequest(user_id=request.user_id, user_input=f'My goal is {user_db_session.goal_obj}\nMy prerequisites are {request.confirm_obj.model_dump_json()}\nWhat should the plan look like?')
             return query(transition, db)
         elif isinstance(request.confirm_obj, PhaseGeneration) and user_db_session.phase_tag != "refine_phases":
             update_session_phases(user_db_session, request.confirm_obj, db)
-            update_session_phase_tag(user_db_session, "refine_phases", db)
+            update_session_phase_tag(user_db_session, "generate_dailies", db)
             #finialise_session()
 
 def insert_session(db: Session=Depends(get_db)): # will not commit in this function. commits should happen with what calls it.
@@ -353,5 +352,4 @@ def update_session_chat_history(session: ChatSession, user_input, response, db: 
     )
     chat_history.append(new_user_message)
     chat_history.append(response.candidates[0].content)
-    print(chat_history)
     update_session_data(session, chat_history, db)
