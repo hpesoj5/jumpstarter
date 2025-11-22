@@ -17,3 +17,5 @@ class APIRequest(BaseModel):
     user_input: str
     session_id: str | None = None
     phase: str
+    
+    '{\n  "status": "prerequisites_extracted",\n  "skill_level": "expert with 1800 rating",\n  "related_experience": [],\n  "resources_available": [\n    "Codeforces",\n    "AtCoder",\n    "local judge codebreaker.xyz"\n  ],\n  "user_gap_assessment": [],\n  "possible_gap_assessment": [\n    "Need to identify specific training areas for algorithms and data structures to bridge the gap from 1800 to 2100 rating.",\n    "May benefit from structured problem-solving strategies and contest simulation practice."\n  ],\n  "time_commitment_per_week_hours": 5,\n  "budget": 0,\n  "required_equipment": [\n    "computer",\n    "stable internet connection"\n  ],\n  "support_system": [\n    "friends doing CP"\n  ],\n  "blocked_time_blocks": [],\n  "available_time_blocks": []\n}'

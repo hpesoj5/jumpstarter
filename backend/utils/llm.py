@@ -22,6 +22,8 @@ responseSchema = schemas.FollowUp | schemas.DefinitionsCreate | schemas.GoalPrer
 def get_session_id(api_request: schemas.APIRequest, chat_sessions: dict) -> tuple[bool, str]:
     if api_request.session_id and api_request.session_id in chat_sessions:
         return (True, api_request.session_id)
+    elif api_request.session_id:
+        return (False, api_request.session_id)
     else:
         api_request.session_id = str(uuid.uuid4())
         return (False, api_request.session_id)
@@ -65,63 +67,94 @@ def query(api_request: schemas.APIRequest, chat_sessions: dict) -> schemas.APIRe
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"LLM API Error: {e}")
+    
+test_user = client.chats.create(
+    model=model,
+    config={
+        "system_instruction": "You are a human user who is testing a goal-planning chatbot. You want to learn Japanese. Answer the questions given to you accordingly, in a human way (i.e. minimal formatting, direct, concise answers)"
+    },
+)
+import time
+tests_dir = backend_dir.parent / "tests"
+def send_message(message: str, file, delay: int) -> str:
+    time.sleep(delay)
+    response = test_user.send_message(message).text
+    print(f"USER: {response}")
+    file.write(f"USER: {response}\n\n")
+    return response
 
 def main(): # to test the ability of the LLM to have a chat with the user resulting in PHASE GENERATION
-    chat_sessions = {}
-  
+    chat_sessions = {} 
+    
     # DEFINING THE GOAL
-    print("What do you want to achieve?")
-    user_input = f'I want to {input("I want to:\n")}'
-    api_request = schemas.APIRequest(user_input=user_input, phase="define_goal")
-    api_response = query(api_request, chat_sessions)
+    api_request = schemas.APIRequest(user_input="", phase="define_goal")
+    session_id = get_session_id(api_request, chat_sessions)[1]
     
-    while api_response.data.status == "follow_up_required":
-        api_request.user_input = input(f"{api_response.data.question_to_user}\n")
+    # OPEN AND WRITE TO FILE
+    with open(tests_dir / f"{session_id}.txt", 'w', encoding='utf-8') as chatlog_file:
+        print("MODEL: What do you want to achieve?\nI want to:")
+        chatlog_file.write("MODEL: What do you want to achieve?\nI want to:\n\n")
+        api_request.user_input = f'I want to {send_message("I want to: ", chatlog_file, 2)}'
         api_response = query(api_request, chat_sessions)
+        
+        while api_response.data.status == "follow_up_required":
+            print(f"MODEL: {api_response.data.question_to_user}")
+            chatlog_file.write(f"MODEL: {api_response.data.question_to_user}\n\n")
+            api_request.user_input = send_message(f"{api_response.data.question_to_user}", chatlog_file, 5)
+            api_response = query(api_request, chat_sessions)
 
-    goal = api_response.data
-    if not isinstance(goal, schemas.DefinitionsCreate):
-        print(f"LLM returned an unexpected format. Expected schemas.DefinitionsCreate, got {type(goal)}")
-        return
-    print(goal.model_dump_json())
+        goal = api_response.data
+        if not isinstance(goal, schemas.DefinitionsCreate):
+            print(f"LLM returned an unexpected format. Expected schemas.DefinitionsCreate, got {type(goal)}")
+            return
+        print(f"MODEL: {goal.model_dump()}")
+        chatlog_file.write(f"MODEL: {goal.model_dump()}\n\n")
 
-    # GETTING USER PREREQUISITES
-    api_request.phase = "get_prerequisites"
-    api_request.user_input = f'My goal is {goal.model_dump_json()}\nWhat prerequisites do you need from me?'
-    api_response = query(api_request, chat_sessions)
-    
-    while api_response.data.status == "follow_up_required":
-        api_request.user_input = input(f"{api_response.data.question_to_user}\n")
+        # GETTING USER PREREQUISITES
+        api_request.phase = "get_prerequisites"
+        api_request.user_input = f'My goal is {goal.model_dump()}\nWhat prerequisites do you need from me?'
         api_response = query(api_request, chat_sessions)
-    
-    prerequisites = api_response.data    
-    if not isinstance(prerequisites, schemas.GoalPrerequisites):
-        print(f"LLM returned an unexpected format. Expected schemas.DefinitionsCreate, got {type(prerequisites)}")
-        return
-    
-    # GENERATING PLAN PHASES
-    api_request.phase = "generate_phases"
-    api_request.user_input = f'My goal is {goal.model_dump_json()}\nMy prerequisites are {prerequisites.model_dump_json()}\nWhat should the plan look like?'
-    api_response = query(api_request, chat_sessions)
-    
-    phases = api_response.data
-    if not isinstance(phases, schemas.PhaseGeneration):
-        print(f"LLM returned an unexpected format. Expected schemas.PhaseGeneration, got {type(phases)}")
-        return
-    
-    print(phases.model_dump_json())
-    # SKIP PHASE REFINING FOR NOW
-    
-    # GENERATING DAILY TASKS
-    api_request.phase = "generate_dailies"
-    api_request.user_input = f'My goal is {goal.model_dump_json()}\nMy prerequisites are {prerequisites.model_dump_json()}\nThe overall plan is {phases.model_dump_json()}\nThe current phase is 1\nCan you generate a daily schedule for me?'
-    api_response = query(api_request, chat_sessions)
-    
-    dailies = api_response.data
-    if not isinstance(dailies, schemas.DailiesGeneration):
-        print(f"LLM returned an unexpected format. Excepted schemas.DailiesGeneration, got {type(dailies)}")
-    
-    print(dailies.model_dump_json())
+        
+        while api_response.data.status == "follow_up_required":
+            print(f"MODEL: {api_response.data.question_to_user}")
+            chatlog_file.write(f"MODEL: {api_response.data.question_to_user}\n\n")
+            api_request.user_input = send_message(f"{api_response.data.question_to_user}", chatlog_file, 10)
+            api_response = query(api_request, chat_sessions)
+        
+        prerequisites = api_response.data    
+        if not isinstance(prerequisites, schemas.GoalPrerequisites):
+            print(f"LLM returned an unexpected format. Expected schemas.DefinitionsCreate, got {type(prerequisites)}")
+            return
+        
+        print(f"MODEL: {prerequisites.model_dump()}")
+        chatlog_file.write(f"MODEL: {prerequisites.model_dump()}\n\n")
+        
+        # GENERATING PLAN PHASES
+        api_request.phase = "generate_phases"
+        api_request.user_input = f'My goal is {goal.model_dump()}\nMy prerequisites are {prerequisites.model_dump()}\nWhat should the plan look like?'
+        api_response = query(api_request, chat_sessions)
+        
+        phases = api_response.data
+        if not isinstance(phases, schemas.PhaseGeneration):
+            print(f"LLM returned an unexpected format. Expected schemas.PhaseGeneration, got {type(phases)}")
+            return
+        
+        print(f"MODEL: {phases.model_dump()}")
+        chatlog_file.write(f"MODEL: {phases.model_dump()}\n\n")
+        # SKIP PHASE REFINING FOR NOW
+        
+        # GENERATING DAILY TASKS
+        api_request.phase = "generate_dailies"
+        start_date = date.today().strftime(DATE_FORMAT)
+        api_request.user_input = f'My goal is {goal.model_dump()}\nMy prerequisites are {prerequisites.model_dump()}\nThe overall plan is {phases.model_dump()}\nThe current phase is 1\nCan you generate a daily schedule for me starting from {start_date}?'
+        api_response = query(api_request, chat_sessions)
+        
+        dailies = api_response.data
+        if not isinstance(dailies, schemas.DailiesGeneration):
+            print(f"LLM returned an unexpected format. Excepted schemas.DailiesGeneration, got {type(dailies)}")
+        
+        print(f"MODEL: {dailies.model_dump()}")
+        chatlog_file.write(f"MODEL: {dailies.model_dump()}\n\n")
     
 if __name__ == "__main__":
     main()

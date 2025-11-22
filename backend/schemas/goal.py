@@ -16,23 +16,23 @@ class DefinitionsCreate(DefinitionsBase):
 class CurrentState(BaseModel):
     """Details about the user's starting point and gaps."""
     skill_level: str = Field(description="The user's current skill level related to the goal.")
-    related_experience: List[str] = Field(description="Relevant past experience or projects.")
-    resources_available: List[str] = Field(description="Current readily available resources (tools, software, people).")
-    user_gap_assessment: List[str] = Field(description="A list of problems or missing skills the user has identified.")
-    possible_gap_assessment: List[str] = Field(description="A list of problems or missing skills identified by the LLM (optional, for planning assistance).")
+    related_experience: List[str] = Field(description="Relevant past experience or projects.", default=[])
+    resources_available: List[str] = Field(description="Current readily available resources (tools, software, people).", default=[])
+    user_gap_assessment: List[str] = Field(description="A list of problems or missing skills the user has identified.", default=[])
+    possible_gap_assessment: List[str] = Field(description="A list of problems or missing skills identified by the LLM (optional, for planning assistance).", default=[])
 
 class FixedResources(BaseModel):
     """Non-negotiable resource constraints."""
     time_commitment_per_week_hours: float = Field(description="The number of hours the user can reliably commit per week.")
-    budget: float = Field(description="The monetary budget available for the goal (in the user's local currency, e.g., 'USD').")
-    required_equipment: List[str] = Field(description="Specific equipment or materials needed to start or complete the goal.")
-    support_system: List[str] = Field(description="People or groups available for emotional or practical support.")
+    budget: float = Field(description="The monetary budget available for the goal (in the user's local currency, e.g., 'USD').", default=0.0)
+    required_equipment: List[str] = Field(description="Specific equipment or materials needed to start or complete the goal.", default=[])
+    support_system: List[str] = Field(description="People or groups available for emotional or practical support.", default=[])
 
 class Constraints(BaseModel):
     """Scheduling and external limitations."""
-    blocked_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Mondays 9am-5pm') when the user is unavailable.")
-    available_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Tuesday 7pm-9pm') when the user is free to work on the goal.")
-    dependencies: List[str] = Field(description="A list of external requirements that must be met before the goal can progress (e.g., 'Wait for equipment delivery').")
+    available_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Tuesday 7pm-9pm') when the user is free to work on the goal.", default=[])
+    blocked_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Mondays 9am-5pm') when the user is absolutely unavailable.", default=[])
+    dependencies: List[str] = Field(description="A list of external requirements that must be met before the goal can progress (e.g., 'Wait for equipment delivery').", default=[])
 
 class GoalPrerequisites(CurrentState, FixedResources, Constraints):
     """The complete structure for all prerequisites."""
@@ -80,16 +80,20 @@ class PhaseRead(PhaseBase):
 class DailyBase(BaseModel):
     task_description: str
     estimated_time_minutes: int
+    start_date: date
+    end_date: date
+    phase_title: str
 
 class DailyCreate(DailyBase):
     pass # Used for POST request body
 
 class DailiesGeneration(BaseModel):
     """Container for the list of daily tasks for each phase"""
-    status: Literal['dailies_generated'] = 'dailies_generated'
+    status: Literal['generation_in_process', 'dailies_generated']
     dailies: List[DailyCreate] = Field(
         description="A list of specific, actionable and measurable daily tasks to achieve the phase."
     )
+    last_daily_date: date
 
 class DailyRead(DailyBase):
     id: int
