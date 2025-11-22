@@ -7,6 +7,7 @@ class SessionBase(BaseModel):
 class Session(SessionBase):
     id: int
     goal_obj = Json[Any]
+    prereq_obj = Json[Any]
     phases_obj = Json[Any]
     class Config:
         from_attributes = True

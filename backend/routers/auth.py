@@ -17,9 +17,10 @@ def signup(user: schemas.UserCreate, db: Session=Depends(get_db)):
         hashed_password=hash_password(user.password),
     )
     db.add(new_user)
+    db.flush()
     db.commit()
     db.refresh(new_user)
-    token = create_access_token({"sub": user.email, "username": user.username})
+    token = create_access_token({"uid": new_user.id, "username": user.username})
     return {"access_token": token, "token_type": "bearer"}
 
 @router.post("/login")
@@ -28,5 +29,5 @@ def login(user: schemas.UserLogin, db: Session=Depends(get_db)):
     if not db_user or not verify_password(user.password, db_user.hashed_password):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
-    token = create_access_token({"sub": db_user.email, "username": db_user.username})
+    token = create_access_token({"uid": db_user.id, "username": db_user.username})
     return {"access_token": token, "token_type": "bearer"}
