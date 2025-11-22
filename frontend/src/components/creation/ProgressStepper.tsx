@@ -27,15 +27,15 @@ export default function ProgressStepper(
                     className="flex-1 flex flex-col items-center relative"
                 >
                     {/* horizontal connector line */}
-                    {index > 0 && (
-                        <div
-                            className={`absolute top-4 left-0 w-full h-[2px] ${
-                            isCompleted ? "bg-blue-600" : "bg-gray-300"
-                            }`}
-                            style={{
-                                transform: "translate(-50%, 50%)",
-                            }}
-                        />
+                    {index >= 0 && index < 3 && (
+                    <div
+                        className={`absolute top-4 left-0 w-full h-[2px] ${
+                        isCompleted ? "bg-blue-600" : "bg-gray-300"
+                        }`}
+                        style={{
+                            transform: "translate(50%)",
+                        }}
+                    />
                     )}
       
                     {/* step circle */}

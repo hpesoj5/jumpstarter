@@ -34,7 +34,8 @@ export default function CreatePage() {
     return (
         <div className="w-full flex flex-col gap-8">
             <ProgressStepper
-                current="define_goal"//{data.phase_tag}
+                //"define_goal" "get_prerequisites" "refine_phases" "refine_dailies"
+                current="refine_dailies"//{data.phase_tag}
             />
             { (() => {
             switch (data.status) {
