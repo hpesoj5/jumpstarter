@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import FollowUpCard from "@/components/creation/FollowUpCard";
 import DefinitionsForm from "@/components/creation/DefinitionsForm";
 import PhaseTimeline from "@/components/creation/PhaseTimeline";
+import ProgressStepper from "@/components/creation/ProgressStepper";
 import { APIResponse, PhaseGeneration, DefinitionsCreate } from "@/types/goals.d";
 import { loadInitialState, sendUserInput, confirmPhase, submitPhaseComment, } from "@/api/creation";
 
@@ -30,44 +31,52 @@ export default function CreatePage() {
     if (!data) return <p>Loading...</p>;
     
     const disabled = loading;
-
-    switch (data.status) {
-        case "follow_up_required":
-        return (
-            <FollowUpCard
-                key={data.question_to_user}
-                data={data}
-                onSubmit={(answer) => fetchData(() => sendUserInput(answer))}
-                disabled={disabled}
+    return (
+        <div className="w-full flex flex-col gap-8">
+            <ProgressStepper
+                current="define_goal"//{data.phase_tag}
             />
-        );
+            { (() => {
+            switch (data.status) {
+                case "follow_up_required":
+                return (
+                    <FollowUpCard
+                        key={data.question_to_user}
+                        data={data}
+                        onSubmit={(answer) => fetchData(() => sendUserInput(answer))}
+                        disabled={disabled}
+                    />
+                );
 
-        case "definitions_extracted":
-        return (
-            <DefinitionsForm
-                data={data}
-                onSubmit={(form: DefinitionsCreate) =>
-                    fetchData(() => confirmPhase(form))
-                }
-                disabled={disabled}
-            />
-        );
+                case "definitions_extracted":
+                return (
+                    <DefinitionsForm
+                        data={data}
+                        onSubmit={(form: DefinitionsCreate) =>
+                            fetchData(() => confirmPhase(form))
+                        }
+                        disabled={disabled}
+                    />
+                );
 
-        case "phases_generated":
-        return (
-            <PhaseTimeline
-                data={data}
-                onConfirm={(phases: PhaseGeneration["phases"]) => {
-                    const newObj: PhaseGeneration = { ...data, phases };
-                    fetchData(() => confirmPhase(newObj));
-                }}
-                onCommentSubmit={(comment: string) =>
-                    fetchData(() => submitPhaseComment(data as PhaseGeneration, comment))
-                }
-                disabled={disabled}
-            />
-        );
+                case "phases_generated":
+                return (
+                    <PhaseTimeline
+                        data={data}
+                        onConfirm={(phases: PhaseGeneration["phases"]) => {
+                            const newObj: PhaseGeneration = { ...data, phases };
+                            fetchData(() => confirmPhase(newObj));
+                        }}
+                        onCommentSubmit={(comment: string) =>
+                            fetchData(() => submitPhaseComment(data as PhaseGeneration, comment))
+                        }
+                        disabled={disabled}
+                    />
+                );
 
-        default: return <p>Unknown state</p>;
-    }
+                default: return <p>Unknown state</p>;
+            }
+            })()}
+        </div>
+    );
 }
