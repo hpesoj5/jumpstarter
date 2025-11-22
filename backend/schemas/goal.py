@@ -11,7 +11,7 @@ class DefinitionsBase(BaseModel):
     
 class DefinitionsCreate(DefinitionsBase):
     status: Literal['definitions_extracted'] = 'definitions_extracted'
-    # are you doing something with this, judging from your other create schemas
+    # are you doing something with this, judging from your other create schemas. just an identifier in case it is needed
 
 class CurrentState(BaseModel):
     """Details about the user's starting point and gaps."""

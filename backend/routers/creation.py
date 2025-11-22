@@ -12,7 +12,8 @@ from backend.db import get_db
 from backend.models import User, ChatSession, Goal, Phase, Daily
 from backend.schemas import (FollowUp, DefinitionsCreate, 
                             CurrentState, FixedResources, Constraints, GoalPrerequisites, 
-                            PhaseGeneration, PhaseCreate)
+                            PhaseGeneration, PhaseCreate,
+                            DailiesGeneration)
 from backend.utils.system_instruction import SYSTEM_INSTRUCTION
 
 from google import genai
@@ -34,7 +35,7 @@ class APIRequest(BaseModel):
 
 class confirmRequest(BaseModel):
     user_id: int | None = None
-    confirm_obj: DefinitionsCreate | PhaseGeneration
+    confirm_obj: DefinitionsCreate | GoalPrerequisites | PhaseGeneration # goal prereq only used by backend to transition
 
 client = genai.Client(api_key=GOOGLE_API_KEY)
 router = APIRouter(prefix="/create", tags=["Goals"])
@@ -45,9 +46,10 @@ def load(request: APIRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"User not signed in")
         
     else:
+        #change_user_session(request.user_id, db) # FOR TESTING ONLY
         last_response = get_model_latest_response(request.user_id, db)
         if last_response == None:
-            return FollowUp('follow_up_required', "What would you like to achieve today?")
+            return FollowUp(status='follow_up_required', question_to_user="What would you like to achieve today?")
         return last_response
 
 @router.post("/query", response_model=APIResponse)
@@ -59,10 +61,16 @@ def query(request: APIRequest, db: Session = Depends(get_db)):
         user_db_session = get_user_session(request.user_id, db)
         response_raw = get_llm_response(user_db_session, request.user_input, db)
         response_parsed = parse_response(response_raw)
-        if isinstance(response_parsed, GoalPrerequisites):
-            update_session_prereq(user_db_session, response_parsed)
         update_session_chat_history(user_db_session, request.user_input, response_raw, db)
         db.commit()
+
+        if isinstance(response_parsed, GoalPrerequisites): # auto transition
+            print(response_parsed)
+            confirm_request = confirmRequest(user_id=request.user_id, confirm_obj=response_parsed)
+            return confirm(confirm_request, db)
+        
+        elif isinstance(response_parsed, PhaseGeneration):
+            update_session_phase_tag(user_db_session, "refine_phases", db)
         return response_parsed
     
 @router.post("/confirm", response_model=APIResponse)
@@ -74,10 +82,18 @@ def confirm(request: confirmRequest, db: Session = Depends(get_db)):
         user_db_session = get_user_session(request.user_id, db)
         if isinstance(request.confirm_obj, DefinitionsCreate):
             update_session_goal(user_db_session, request.confirm_obj, db)
+            update_session_phase_tag(user_db_session, "get_prerequisites", db)
             transition = APIRequest(user_id=request.user_id, user_input=f'My goal is {request.confirm_obj.model_dump_json()}\nWhat prerequisites do you need from me?')
             return query(transition, db)
-        elif isinstance(request.confirm_obj, PhaseGeneration):
-            print("here")
+        elif isinstance(request.confirm_obj, GoalPrerequisites):
+            update_session_prereq(user_db_session, request.confirm_obj, db)
+            update_session_phase_tag(user_db_session, "generate_phases", db)
+            print(user_db_session.goal_obj)
+            transition = APIRequest(user_id=request.user_id, user_input=f'My goal is {user_db_session.goal_obj}\nMy prerequisites are {request.confirm_obj.model_dump_json()}\nWhat should the plan look like?')
+            return query(transition, db)
+        elif isinstance(request.confirm_obj, PhaseGeneration) and user_db_session.phase_tag != "refine_phases":
+            update_session_phases(user_db_session, request.confirm_obj, db)
+            update_session_phase_tag(user_db_session, "refine_phases", db)
             #finialise_session()
 
 def insert_session(db: Session=Depends(get_db)): # will not commit in this function. commits should happen with what calls it.
@@ -118,7 +134,7 @@ def change_user_session(uid, db: Session=Depends(get_db)):
         new_session = insert_session(db)
         user.session = new_session
         db.commit()
-        db.refresh()
+        db.refresh(user)
         print(f"User {user.username} (uid: {uid}), successfully updated session")
         return new_session
 
@@ -149,9 +165,23 @@ def get_model_latest_response(uid, db: Session=Depends(get_db)):
     models = TypeAdapter(FollowUp | DefinitionsCreate | GoalPrerequisites | PhaseGeneration)
     session = get_user_session(uid, db)
     chat_history = pickle.loads(session.session_data)
+    if len(chat_history) == 0:
+        return None
     text_obj = json.loads(chat_history[-1].parts[0].text)
     return models.validate_python(text_obj)
 
+def update_session_phase_tag(session: ChatSession, phase_tag, db: Session=Depends(get_db)):
+    try:
+        session.phase_tag = phase_tag
+        
+        db.add(session)
+        db.commit()
+        db.refresh(session)
+        return True
+    except Exception as e:
+        print("Error with updating session data: ", e)
+        return False
+    
 def update_session_data(session: ChatSession, session_data, db: Session=Depends(get_db)):
     try:
         session.session_data = pickle.dumps(session_data)
@@ -274,8 +304,9 @@ def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(
     DATE_FORMAT = '%Y-%m-%d'
     current_date_str = date.today().strftime(DATE_FORMAT)
     chat_history = pickle.loads(session.session_data)
+    
     new_user_message = Content(
-        parts=[Part.from_text(text=user_input)],
+        parts=[Part.from_text(text=f'CURRENT_PHASE = "{session.phase_tag}"\n{user_input}')],
         role='user'
     )
     chat_history.append(new_user_message)
@@ -292,6 +323,7 @@ def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(
                 fixedResources=FixedResources.model_json_schema(),
                 constraints=Constraints.model_json_schema(),
                 phaseGeneration=PhaseGeneration.model_json_schema(),
+                dailiesGeneration=DailiesGeneration.model_json_schema(),
             ),
             "response_mime_type": "application/json",
             "response_schema": responseSchema,
@@ -316,9 +348,10 @@ def parse_response(response):
 def update_session_chat_history(session: ChatSession, user_input, response, db: Session=Depends(get_db)):
     chat_history = pickle.loads(session.session_data)
     new_user_message = Content(
-        parts=[Part.from_text(text=user_input)],
+        parts=[Part.from_text(text=f'CURRENT_PHASE = "{session.phase_tag}"\n{user_input}')],
         role='user'
     )
     chat_history.append(new_user_message)
     chat_history.append(response.candidates[0].content)
+    print(chat_history)
     update_session_data(session, chat_history, db)
