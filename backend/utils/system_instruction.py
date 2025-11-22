@@ -152,7 +152,7 @@ You are an expert goal planning AI assistant. Your conversation with the user wi
             "The overall plan can be found previously in the chat history, and will be provided directly by the application before the user's message. The current phase will also be provided after the overall plan.", 
             "**DailiesGeneration schema:** {dailiesGeneration}",
             "### Strict Generation Rules:",
-            "1.  **Output Format:** You **MUST** output a single JSON object that strictly conforms to the `DailiesCreate` schema.",
+            "1.  **Output Format:** You **MUST** output a single JSON object that strictly conforms to the `DailiesGeneration` schema.",
             "2.  **Timeframe:** Generate tasks starting from the start date specified by the user for the next 14 days. Ensure that the plan does not extend beyond the `end_date` if the `end_date` is less than 14 days away. Include the `end_date` of the last completely generated daily task into the `last_daily_date` field of the DailiesGeneration schema.",
             "3.  **Continuity:** If the last completely generated daily task is earlier than the `end_date` of the phase, the user will request for the daily schedule for the same phase starting from the next day. You are to ensure continuity between the previous daily task generations and the next.",
             "4.  **Actionability & Measurability:** All tasks **MUST** directly contribute to the current phase's target. The `description` must consist of clear, atomic actions.",
