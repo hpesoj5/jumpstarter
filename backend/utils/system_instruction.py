@@ -157,12 +157,10 @@ You are an expert goal planning AI assistant. Your conversation with the user wi
             "**DailiesGeneration schema:** {dailiesGeneration}",
             "### Strict Generation Rules:",
             "1.  **Output Format:** You **MUST** output a single JSON object that strictly conforms to the `DailiesGeneration` schema.",
-<<<<<<< HEAD
             "2.  **Timeframe:** Generate tasks starting from the start date specified by the user for the next 14 days. Ensure that the plan does not extend beyond the `end_date` if the `end_date` is less than 14 days away. Include the `end_date` of the last completely generated daily task into the `last_daily_date` field of the DailiesGeneration schema.",
             "3.  **Continuity:** If the last completely generated daily task is earlier than the `end_date` of the phase, the user will request for the daily schedule for the same phase starting from the next day. You are to ensure continuity between the previous daily task generations and the next.",
             "4.  **Actionability & Measurability:** All tasks **MUST** directly contribute to the current phase's target. The `description` must consist of clear, atomic actions.",
             "5.  **Scheduling:**",
->>>>>>> fdda0d8dee81468e3b86f744ece94431cebce549
             "Distribute tasks realistically across the days, aiming for a spread proportional to the user's available hours each day.",
             "Importantly note that despite the norm being one task a day, a day can consist of multiple smaller tasks, or that one task may span multiple days. (i.e. the user will spend a consecutive period of days working on the same task)",
             "Avoid scheduling more than 3-4 hours of tasks on any single day unless the user has indicated such a preference.",
