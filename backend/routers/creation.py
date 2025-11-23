@@ -42,6 +42,7 @@ router = APIRouter(prefix="/create", tags=["Goals"])
 
 @router.post("/load", response_model=APIResponse)
 def load(request: APIRequest, db: Session = Depends(get_db)):
+    print(request)
     if request.user_id == None or request.user_id == -1:
         raise HTTPException(status_code=500, detail=f"User not signed in")
         
@@ -329,7 +330,7 @@ def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(
         },
     )
 
-def parse_response(response):
+def parse_response(response): # can do more parsing but thats kinda a lot of work i.e. check for missing fields
     models = TypeAdapter(FollowUp | DefinitionsCreate | GoalPrerequisites | PhaseGeneration)
     text = response.candidates[0].content.parts[0].text
     # code fence removal

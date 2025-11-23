@@ -2,7 +2,6 @@
 
 import { PlusCircle, Target } from "lucide-react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import GoalSidebarItem from "@/components/goals/GoalSidebarItem";
 
 export default function Sidebar() {
@@ -10,7 +9,6 @@ export default function Sidebar() {
     { id: 1, title: "Learn React" },
     { id: 2, title: "Run a Marathon" },
   ]);
-  const router = useRouter();
 
   return (
     <aside className="w-64 h-full bg-white border-r border-gray-100 flex flex-col justify-between">
@@ -33,9 +31,7 @@ export default function Sidebar() {
 
       {/* Bottom - Create Goal */}
       <div className="p-4 border-t border-gray-100">
-        <button 
-          onClick={() => router.push("/create")}
-          className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
+        <button className="flex items-center gap-2 text-blue-600 hover:text-blue-700 font-medium">
           <PlusCircle size={18} />
           <span>Create New Goal</span>
         </button>

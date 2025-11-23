@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 import { useClickAway } from "@uidotdev/usehooks";
@@ -27,14 +28,21 @@ const getUsername = (): string => {
 export default function Navbar() {
   const [userMenu, setUserMenu] = useState(false);
   const [authMode, setAuthMode] = useState<"login" | "signup" | null>(null);
-  const [username, setUsername] = useState(getUsername);
+  const [username, setUsername] = useState<string | null>(null);
+  useEffect(() => {
+    const update = () => setUsername(getUsername());
+    window.addEventListener("storage", update);
+    update(); // on hydration
+    return () => window.removeEventListener("storage", update);
+  }, []);
+  const router = useRouter();
   const ref = useClickAway(() => {
     setUserMenu(false);
   }) as React.RefObject<HTMLDivElement | null>;
 
   return ( 
     <>
-    <header className="flex justify-between items-center px-6 py-3 bg-white shadow-sm border-b border-gray-100">
+    <header className="flex justify-between items-center px-6 py-3 bg-white shadow-sm border-b border-gray-300">
       {/* Left - Placeholder */}
       <div className="w-16" />
       
@@ -44,15 +52,15 @@ export default function Navbar() {
       {/* Right - User */}
       <div className="relative flex justify-end w-32">
           {username === "" ? ( // not signed in
-            <div>
+            <div className="flex gap-3">
               <button
                 onClick={() => setAuthMode("login")}
-                className="whitespace-nowrap border rounded px-3 py-1 text-black bg-gray-100 hover:bg-gray-200 transition">
+                className="whitespace-nowrap border rounded-md px-3 py-1 text-gray-800 bg-gray-200 hover:bg-gray-300 transition">
                 Log In
               </button>
               <button
                 onClick={() => setAuthMode("signup")}
-                className="whitespace-nowrap border rounded px-3 py-1 w-full bg-indigo-600 text-white hover:bg-indigo-800 transition">
+                className="whitespace-nowrap border rounded-md px-3 py-1 w-full bg-indigo-600 text-white hover:bg-indigo-800 transition">
                 Sign Up
               </button>
             </div>
@@ -73,6 +81,7 @@ export default function Navbar() {
                       setUserMenu(false);
                       localStorage.removeItem("token");
                       setUsername(getUsername);
+                      router.push("/");
                     }}
                     className="block w-full text-left px-4 py-2 text-red-500 hover:bg-gray-100">
                     Logout
@@ -83,8 +92,7 @@ export default function Navbar() {
           )}
         </div>
     </header>
-    {authMode && (
-      <AuthModal
+    {authMode && (<AuthModal 
         mode={authMode}
         onClose={() => {
           setAuthMode(null);

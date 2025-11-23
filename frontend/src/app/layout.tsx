@@ -13,12 +13,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="flex flex-row h-screen bg-gray-50 text-gray-900">
         {/* Sidebar (left) */}
-        <Sidebar />
+        {/*<Sidebar />*/}
 
         {/* Main content area */}
-        <div className="flex flex-col flex-1 h-full">
+        <div className="flex flex-col flex-1 h-full overflow-hidden">
           <Navbar />
-          <main className="p-6 overflow-y-auto flex-1">{children}</main>
+          <main className="p-6 flex-1 overflow-y-auto">{children}</main>
         </div>
 
       </body>
