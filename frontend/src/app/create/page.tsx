@@ -8,15 +8,15 @@ import { APIResponse, PhaseGeneration, DefinitionsCreate } from "@/types/goals.d
 import { loadInitialState, sendUserInput, confirmPhase, submitPhaseComment, } from "@/api/creation";
 
 export default function CreatePage() {
-    const [data, setData] = useState<APIResponse | null>(null);
+    const [apiresonse, setData] = useState<APIResponse | null>(null);
     const [loading, setLoading] = useState(false);
 
     // Load initial state from backend
     const fetchData = async (fn: () => Promise<APIResponse>) => {
         setLoading(true);
         try {
-            const newData = await fn();
-            setData(newData);
+            const newResponse = await fn();
+            setData(newResponse);
         } catch (err) {
             console.error(err);
         } finally {
@@ -28,22 +28,23 @@ export default function CreatePage() {
     fetchData(loadInitialState);
     }, []);
 
-    if (!data) return <p>Loading...</p>;
+    if (!apiresonse) return <p>Loading...</p>;
     
     const disabled = loading;
     return (
         <div className="w-full flex flex-col gap-8">
             <ProgressStepper
-                //"define_goal" "get_prerequisites" "refine_phases" "refine_dailies"
-                current="refine_dailies"//{data.phase_tag}
+                //"define_goal" "get_prerequisites" "refine_phases" "generate_dailies"
+                current={apiresonse.phase_tag}
             />
             { (() => {
-            switch (data.status) {
+            const response_data = apiresonse.ret_obj
+            switch (response_data.status) {
                 case "follow_up_required":
                 return (
                     <FollowUpCard
-                        key={data.question_to_user}
-                        data={data}
+                        key={response_data.question_to_user}
+                        data={response_data}
                         onSubmit={(answer) => fetchData(() => sendUserInput(answer))}
                         disabled={disabled}
                     />
@@ -52,7 +53,7 @@ export default function CreatePage() {
                 case "definitions_extracted":
                 return (
                     <DefinitionsForm
-                        data={data}
+                        data={response_data}
                         onSubmit={(form: DefinitionsCreate) =>
                             fetchData(() => confirmPhase(form))
                         }
@@ -63,13 +64,13 @@ export default function CreatePage() {
                 case "phases_generated":
                 return (
                     <PhaseTimeline
-                        data={data}
+                        data={response_data}
                         onConfirm={(phases: PhaseGeneration["phases"]) => {
-                            const newObj: PhaseGeneration = { ...data, phases };
+                            const newObj: PhaseGeneration = { ...response_data, phases };
                             fetchData(() => confirmPhase(newObj));
                         }}
                         onCommentSubmit={(comment: string) =>
-                            fetchData(() => submitPhaseComment(data as PhaseGeneration, comment))
+                            fetchData(() => submitPhaseComment(response_data as PhaseGeneration, comment))
                         }
                         disabled={disabled}
                     />

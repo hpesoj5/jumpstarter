@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, ForeignKey, Date, Boolean, Float
+from sqlalchemy import Column, Integer, String, Text, ForeignKey, Date, Boolean, Float, Time
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
 from backend.db.session import Base
@@ -28,7 +28,6 @@ class Goal(Base):
 
     blocked_time_blocks = Column(ARRAY(String))
     available_time_blocks = Column(ARRAY(String))
-    dependencies = Column(ARRAY(String))
 
     phases = relationship("Phase", back_populates="goal", cascade="all, delete-orphan")
 
@@ -49,6 +48,8 @@ class Daily(Base):
     __tablename__ = "dailies"
     id = Column(Integer, primary_key=True, index=True)
     task_description = Column(String, nullable=False)
+    dailies_date = Column(Date, nullable=False)
+    start_time = Column(Time, nullable=False)
     estimated_time_minutes = Column(Integer, nullable=False)
     is_completed = Column(Boolean, default=False)
     

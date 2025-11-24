@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Literal, Any
-from datetime import date
+from datetime import date, time
     
 class DefinitionsBase(BaseModel):
     status: Literal['definitions_extracted'] = 'definitions_extracted'
@@ -32,7 +32,6 @@ class Constraints(BaseModel):
     """Scheduling and external limitations."""
     available_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Tuesday 7pm-9pm') when the user is free to work on the goal.", default=[])
     blocked_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Mondays 9am-5pm') when the user is absolutely unavailable.", default=[])
-    dependencies: List[str] = Field(description="A list of external requirements that must be met before the goal can progress (e.g., 'Wait for equipment delivery').", default=[])
 
 class GoalPrerequisites(CurrentState, FixedResources, Constraints):
     """The complete structure for all prerequisites."""
@@ -79,9 +78,9 @@ class PhaseRead(PhaseBase):
 
 class DailyBase(BaseModel):
     task_description: str
+    dailies_date: date
+    start_time: time
     estimated_time_minutes: int
-    start_date: date
-    end_date: date
     phase_title: str
 
 class DailyCreate(DailyBase):
@@ -89,11 +88,10 @@ class DailyCreate(DailyBase):
 
 class DailiesGeneration(BaseModel):
     """Container for the list of daily tasks for each phase"""
-    status: Literal['generation_in_process', 'dailies_generated']
+    status: Literal['dailies_generated'] = 'dailies_generated'
     dailies: List[DailyCreate] = Field(
         description="A list of specific, actionable and measurable daily tasks to achieve the phase."
     )
-    last_daily_date: date
 
 class DailyRead(DailyBase):
     id: int
@@ -102,3 +100,7 @@ class DailyRead(DailyBase):
 
     class Config:
         from_attributes = True
+
+class DailiesPost(DailiesGeneration):
+    goal_phases: List[str]
+    curr_phase: str

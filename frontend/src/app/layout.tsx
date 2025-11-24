@@ -18,7 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         {/* Main content area */}
         <div className="flex flex-col flex-1 h-full overflow-hidden">
           <Navbar />
-          <main className="p-6 flex-1 overflow-y-auto">{children}</main>
+          <main className="flex-1 overflow-y-auto">{children}</main>
         </div>
 
       </body>
