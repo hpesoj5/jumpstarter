@@ -11,10 +11,10 @@ router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 @router.get("/stats")
 def get_stats(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
     """Returns stats of top row cards (
-        tasks today,
+        remaining tasks today,
+        completed tasks today,
         goals in progress (ongoing goals),
         completed goals,
-        something else i havent thought of
     ) and the tasks for the day.
     """
     current_date = date.today()
