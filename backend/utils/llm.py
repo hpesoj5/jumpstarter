@@ -8,6 +8,7 @@ from backend.utils.system_instruction import SYSTEM_INSTRUCTION
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+import time
 
 backend_dir = Path(__file__).resolve().parent.parent
 load_dotenv(backend_dir / ".env")
@@ -60,6 +61,7 @@ def query(api_request: schemas.APIRequest, chat_sessions: dict) -> schemas.APIRe
     try:
         current_date_str = date.today().strftime(DATE_FORMAT)
         message = f'CURRENT_PHASE = "{api_request.phase}"\ncurrent_date = {current_date_str}\n{api_request.user_input}'
+        time.sleep(2)
         response = chat.send_message(message)
         results = response.parsed
         chat_sessions[session_id] = chat
@@ -83,7 +85,6 @@ test_user = client.chats.create(
                                 """
     },
 )
-import time
 tests_dir = backend_dir.parent / "tests"
 def send_message(message: str, file, delay: int, verbose=False) -> str:
     time.sleep(delay)

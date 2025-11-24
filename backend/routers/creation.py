@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, TypeAdapter, Field
 from sqlalchemy.orm import Session, joinedload
 
-from backend.utils import hash_password
+from backend.utils import hash_password, get_current_user
 from backend.db import get_db
 
 from backend.models import User, ChatSession, Goal, Phase, Daily
@@ -44,9 +44,9 @@ client = genai.Client(api_key=GOOGLE_API_KEY)
 router = APIRouter(prefix="/create", tags=["Goals"])
 
 @router.post("/load", response_model=APIResponse)
-def load(request: APIRequest, db: Session = Depends(get_db)):
+def load(request: APIRequest, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
     print(request)
-    if request.user_id == None or request.user_id == -1:
+    if request.user_id == None or request.user_id == -1 or request.user_id != user_id:
         raise HTTPException(status_code=500, detail=f"User not signed in")
         
     else:
@@ -66,8 +66,8 @@ def load(request: APIRequest, db: Session = Depends(get_db)):
         return APIResponse(phase_tag=user_db_session.phase_tag, ret_obj=last_response)
 
 @router.post("/query", response_model=APIResponse)
-def query(request: APIRequest, db: Session = Depends(get_db)):
-    if request.user_id == None:
+def query(request: APIRequest, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+    if request.user_id == None or request.user_id != user_id:
         raise HTTPException(status_code=500, detail=f"User not signed in")
         
     else:
@@ -86,8 +86,8 @@ def query(request: APIRequest, db: Session = Depends(get_db)):
         return APIResponse(phase_tag=user_db_session.phase_tag, ret_obj=response_parsed)
     
 @router.post("/confirm", response_model=APIResponse)
-def confirm(request: ConfirmRequest, db: Session = Depends(get_db)):
-    if request.user_id == None:
+def confirm(request: ConfirmRequest, user_id = Depends(get_current_user), db: Session = Depends(get_db)):
+    if request.user_id == None or request.user_id != user_id:
         raise HTTPException(status_code=500, detail=f"User not signed in")
         
     else:

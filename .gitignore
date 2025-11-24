@@ -5,3 +5,4 @@ backend/alembic.ini
 **/__pycache__/
 notebooks
 tests
+.prettierrc

@@ -1,25 +1,6 @@
 import { APIResponse, PhaseGeneration, DefinitionsCreate, APIRequest, ConfirmRequest } from "@/types/goals.d";
-import { jwtDecode } from "jwt-decode";
-export const API_URL = "http://localhost:8000";
-
-
-type TokenPayload = {
-    uid?: number,
-    username?: string,
-    exp?: number, //convert to JS date by calling new Date(exp * 1000)
-    iat?: number
-};
-
-const getUserId = (): number => {
-    try {
-        const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
-    if (!token) return -1;
-        const decoded = jwtDecode<TokenPayload>(token);
-        return decoded.uid ?? -1;
-    } catch {
-        return -1;
-    }
-};
+import { getUserId } from  "@/api/auth"
+import { API_URL } from "@/api/config";
 
 export async function loadInitialState(): Promise<APIResponse> {
     const payload: APIRequest = {
@@ -31,7 +12,6 @@ export async function loadInitialState(): Promise<APIResponse> {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
     });
-    console.log(res)
     if (!res.ok) throw new Error("Failed to load goal state");
     return res.json();
 }
@@ -43,7 +23,10 @@ export async function sendUserInput(user_input: string): Promise<APIResponse> {
     };
     const res = await fetch(`${API_URL}/create/query`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error("Failed to send user input");

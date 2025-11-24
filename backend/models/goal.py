@@ -10,11 +10,12 @@ class Goal(Base):
     metric = Column(Text, index=True, nullable=False)
     purpose = Column(Text, index=True, nullable=False)
     deadline = Column(Date, index=True, nullable=False)
+    is_completed = Column(Boolean, default=False)
 
     owner_id = Column(Integer, ForeignKey("users.id"), index=True)
     owner = relationship("User", back_populates="goals")
 
-    # Prerequisites, need to be unwraped to pass in
+    # Prerequisites, need to be unwrapped to pass in
     skill_level = Column(Text)
     related_experience = Column(ARRAY(Text))
     resources_available = Column(ARRAY(Text))
@@ -30,6 +31,7 @@ class Goal(Base):
     available_time_blocks = Column(ARRAY(String))
 
     phases = relationship("Phase", back_populates="goal", cascade="all, delete-orphan")
+    
 
 class Phase(Base):
     __tablename__ = "phases"
@@ -48,8 +50,13 @@ class Daily(Base):
     __tablename__ = "dailies"
     id = Column(Integer, primary_key=True, index=True)
     task_description = Column(String, nullable=False)
+<<<<<<< HEAD
     dailies_date = Column(Date, nullable=False)
     start_time = Column(Time, nullable=False)
+=======
+    start_date = Column(Date, nullable=False)
+    end_date = Column(Date, nullable=False)
+>>>>>>> joseph
     estimated_time_minutes = Column(Integer, nullable=False)
     is_completed = Column(Boolean, default=False)
     

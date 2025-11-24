@@ -19,7 +19,7 @@ try {
 
     localStorage.setItem("token", data.access_token);
     window.dispatchEvent(new Event("storage"));
-    router.push("/create");
+    router.push("/dashboard");
     onClose();
 } catch (err: any) {
     setError(err.message);
