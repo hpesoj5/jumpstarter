@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 interface CarouselProps {
-    images: string[];
-    autoScrollInterval?: number;
+  images: string[];
+  autoScrollInterval?: number;
 }
 
 export const Carousel: React.FC<CarouselProps> = ({

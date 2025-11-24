@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from backend.db.session import Base
 
@@ -9,4 +9,6 @@ class User(Base):
     email = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
 
+    session_id = Column(Integer, ForeignKey("sessions.id"), index=True, nullable=True)
+    session = relationship("ChatSession", back_populates="user")
     goals = relationship("Goal", back_populates="owner")

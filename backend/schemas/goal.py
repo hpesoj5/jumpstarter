@@ -1,11 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import List, Literal, Any
-from datetime import date
-
-# for clarifications from LLM
-class FollowUp(BaseModel):
-    status: Literal['follow_up_required'] = 'follow_up_required'
-    question_to_user: str = Field(description="A single, specific, question to the user.")
+from datetime import date, time
     
 class DefinitionsBase(BaseModel):
     status: Literal['definitions_extracted'] = 'definitions_extracted'
@@ -16,39 +11,38 @@ class DefinitionsBase(BaseModel):
     
 class DefinitionsCreate(DefinitionsBase):
     status: Literal['definitions_extracted'] = 'definitions_extracted'
-    # are you doing something with this, judging from your other create schemas
-    
-class Definitions(DefinitionsBase):
-    id: int
-    prerequisites: str # Includes the data expected from Phase 2
-    
-    class Config:
-        from_attributes = True
+    # are you doing something with this, judging from your other create schemas. just an identifier in case it is needed
 
 class CurrentState(BaseModel):
     """Details about the user's starting point and gaps."""
     skill_level: str = Field(description="The user's current skill level related to the goal.")
-    related_experience: str = Field(description="Relevant past experience or projects.")
-    resources_available: str = Field(description="Current readily available resources (tools, software, people).")
-    user_gap_assessment: List[str] = Field(description="A list of problems or missing skills the user has identified.")
-    possible_gap_assessment: List[str] = Field(description="A list of problems or missing skills identified by the LLM (optional, for planning assistance).")
+    related_experience: List[str] = Field(description="Relevant past experience or projects.", default=[])
+    resources_available: List[str] = Field(description="Current readily available resources (tools, software, people).", default=[])
+    user_gap_assessment: List[str] = Field(description="A list of problems or missing skills the user has identified.", default=[])
+    possible_gap_assessment: List[str] = Field(description="A list of problems or missing skills identified by the LLM (optional, for planning assistance).", default=[])
 
 class FixedResources(BaseModel):
     """Non-negotiable resource constraints."""
     time_commitment_per_week_hours: float = Field(description="The number of hours the user can reliably commit per week.")
-    budget: float = Field(description="The monetary budget available for the goal (in the user's local currency, e.g., 'USD').")
-    required_equipment: str = Field(description="Specific equipment or materials needed to start or complete the goal.")
-    support_system: str = Field(description="People or groups available for emotional or practical support.")
+    budget: float = Field(description="The monetary budget available for the goal (in the user's local currency, e.g., 'USD').", default=0.0)
+    required_equipment: List[str] = Field(description="Specific equipment or materials needed to start or complete the goal.", default=[])
+    support_system: List[str] = Field(description="People or groups available for emotional or practical support.", default=[])
 
 class Constraints(BaseModel):
     """Scheduling and external limitations."""
-    blocked_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Mondays 9am-5pm') when the user is unavailable.")
-    available_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Tuesday 7pm-9pm') when the user is free to work on the goal.")
-    dependencies: List[str] = Field(description="A list of external requirements that must be met before the goal can progress (e.g., 'Wait for equipment delivery').")
+    available_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Tuesday 7pm-9pm') when the user is free to work on the goal.", default=[])
+    blocked_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Mondays 9am-5pm') when the user is absolutely unavailable.", default=[])
 
 class GoalPrerequisites(CurrentState, FixedResources, Constraints):
     """The complete structure for all prerequisites."""
     status: Literal['prerequisites_extracted'] = 'prerequisites_extracted'
+
+class Definitions(DefinitionsBase):
+    id: int
+    prerequisites: GoalPrerequisites # Includes the data expected from Phase 2
+    
+    class Config:
+        from_attributes = True
 
 class PhaseBase(BaseModel):
     title: str = Field(
@@ -84,10 +78,20 @@ class PhaseRead(PhaseBase):
 
 class DailyBase(BaseModel):
     task_description: str
+    dailies_date: date
+    start_time: time
     estimated_time_minutes: int
+    phase_title: str
 
 class DailyCreate(DailyBase):
     pass # Used for POST request body
+
+class DailiesGeneration(BaseModel):
+    """Container for the list of daily tasks for each phase"""
+    status: Literal['dailies_generated'] = 'dailies_generated'
+    dailies: List[DailyCreate] = Field(
+        description="A list of specific, actionable and measurable daily tasks to achieve the phase."
+    )
 
 class DailyRead(DailyBase):
     id: int
@@ -96,14 +100,7 @@ class DailyRead(DailyBase):
 
     class Config:
         from_attributes = True
-        
-# for FastAPI to return
-class APIResponse(BaseModel):
-    session_id: str
-    data: FollowUp | DefinitionsCreate | GoalPrerequisites | PhaseGeneration  # more specific phase-related models will be added
 
-# --- Request Model ---
-class APIRequest(BaseModel):
-    user_input: str
-    session_id: str | None = None
-    phase: str
+class DailiesPost(DailiesGeneration):
+    goal_phases: List[str]
+    curr_phase: str

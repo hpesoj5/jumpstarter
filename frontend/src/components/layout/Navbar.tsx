@@ -8,7 +8,7 @@ import { useClickAway } from "@uidotdev/usehooks";
 import AuthModal from "@/components/AuthModal";
 
 type TokenPayload = {
-  sub?: string,
+  uid?: number,
   username?: string,
   exp?: number, //convert to JS date by calling new Date(exp * 1000)
   iat?: number
