@@ -9,7 +9,10 @@ export async function loadInitialState(): Promise<APIResponse> {
     };
     const res = await fetch(`${API_URL}/create/load`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+        },
         body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error("Failed to load goal state");
@@ -40,7 +43,10 @@ export async function confirmPhase(confirm_obj: DefinitionsCreate | PhaseGenerat
     };
     const res = await fetch(`${API_URL}/create/confirm`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json"
+        },
         body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error("Failed to confirm definitions/phases");

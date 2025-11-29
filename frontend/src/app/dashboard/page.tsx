@@ -5,7 +5,7 @@ import Grid from "@mui/material/Grid";
 import { getStats } from "@/api/dashboard";
 import type { TokenPayload } from "@/api/config";
 import { StatCard } from "@/components/dashboard/card";
-import { Daily, DailyTable } from "@/components/dashboard/dailylist";
+import { Daily, DailyTable, EmptyDailies } from "@/components/dashboard/dailylist";
 import { jwtDecode } from "jwt-decode";
 
 interface Stats {
@@ -71,11 +71,15 @@ export default function Dashboard() {
                 <StatCard stat="Completed Goals" value={stats?.completed_goals} sx={{ height: '100%' }} />
             </Grid>
             <Grid size={{ lg: 8, sm: 12 }}>
-                {(stats?.remaining_tasks_today > 0) && (<DailyTable
-                    count={stats?.remaining_tasks_today}
-                    page={1}
-                    rows={stats?.tasks_today_list}
-                />)}
+                {stats?.remaining_tasks_today > 0 ? (
+                    <DailyTable
+                        count={stats?.remaining_tasks_today}
+                        page={1}
+                        rows={stats?.tasks_today_list}
+                    />
+                ) : (
+                    <EmptyDailies/>
+                )}
             </Grid>
             <Grid size={{ lg: 4, sm: 12 }}>
 

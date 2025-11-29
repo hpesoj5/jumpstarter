@@ -40,7 +40,7 @@ export function DailyTable({ count=0, page=0, rows=[] }: DailyTableProps): JSX.E
 
     return (
         <Card>
-            <Box sx={{ overflowX: "auto"}}>
+            <Box sx={{ height: "72vh", overflow: "auto"}}>
                 <Table sx={{ minWidth: "800px"}}>
                     <TableHead>
                         <TableRow>
@@ -90,6 +90,17 @@ export function DailyTable({ count=0, page=0, rows=[] }: DailyTableProps): JSX.E
                         })}
                     </TableBody>
                 </Table>
+            </Box>
+        </Card>
+    );
+}
+
+export function EmptyDailies(): JSX.Element {
+    return (
+        <Card>
+            <Box sx={{ height: "72vh", overflow: "auto", justifyContent: "center", flexDirection: "column", display: "flex" }}>
+                <Typography textAlign="center" variant="h1">No Tasks Today</Typography>
+                <Typography textAlign="center" variant="subtitle1">Check back tomorrow for more tasks!</Typography>
             </Box>
         </Card>
     );
