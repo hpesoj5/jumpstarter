@@ -1,9 +1,9 @@
-import { JSX } from 'react';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Stack from '@mui/material/Stack';
-import type { SxProps } from '@mui/material/styles';
-import Typography from '@mui/material/Typography';
+import { JSX } from "react";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Stack from "@mui/material/Stack";
+import type { SxProps } from "@mui/material/styles";
+import Typography from "@mui/material/Typography";
 
 export interface CardValue {
     stat: "Remaining Tasks Today" | "Completed Tasks Today" | "Ongoing Goals" | "Completed Goals",

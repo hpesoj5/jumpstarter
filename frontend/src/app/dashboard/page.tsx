@@ -5,6 +5,7 @@ import Grid from "@mui/material/Grid";
 import { getStats } from "@/api/dashboard";
 import type { TokenPayload } from "@/api/config";
 import { StatCard } from "@/components/dashboard/card";
+import { Daily, DailyTable } from "@/components/dashboard/dailylist";
 import { jwtDecode } from "jwt-decode";
 
 interface Stats {
@@ -12,7 +13,7 @@ interface Stats {
     completed_tasks_today: number,
     ongoing_goals: number,
     completed_goals: number,
-    tasks_today_list: [],
+    tasks_today_list: Daily[],
 }
 
 export default function Dashboard() {
@@ -68,6 +69,16 @@ export default function Dashboard() {
             </Grid>
             <Grid size={{ lg: 3, sm: 6, xs: 12 }}>
                 <StatCard stat="Completed Goals" value={stats?.completed_goals} sx={{ height: '100%' }} />
+            </Grid>
+            <Grid size={{ lg: 8, sm: 12 }}>
+                {(stats?.remaining_tasks_today > 0) && (<DailyTable
+                    count={stats?.remaining_tasks_today}
+                    page={1}
+                    rows={stats?.tasks_today_list}
+                />)}
+            </Grid>
+            <Grid size={{ lg: 4, sm: 12 }}>
+
             </Grid>
         </Grid>
     );

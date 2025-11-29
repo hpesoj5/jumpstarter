@@ -34,12 +34,12 @@ def get_stats(user_id: int = Depends(get_current_user), db: Session = Depends(ge
         .join(models.Phase.goal)
         .filter(
             models.Goal.owner_id == user_id,
-            models.Daily.start_date <= current_date,
-            models.Daily.end_date >= current_date,
+            models.Daily.dailies_date == current_date,
             models.Daily.is_completed == False,
             )
         .all()
     )
+    tasks_today_list = [schemas.DailyRead.model_validate(task, from_attributes=True) for task in tasks_today_list]
     tasks = (
         db.query(
             func.count(case((models.Daily.is_completed == False, 1), else_=0)).label("ongoing"),
@@ -49,8 +49,7 @@ def get_stats(user_id: int = Depends(get_current_user), db: Session = Depends(ge
         .join(models.Phase.goal)
         .filter(
             models.Goal.owner_id == user_id,
-            models.Daily.start_date <= current_date,
-            models.Daily.end_date >= current_date,
+            models.Daily.dailies_date == current_date,
         )
         .first()
     )
