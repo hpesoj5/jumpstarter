@@ -4,7 +4,7 @@ import FollowUpCard from "@/components/creation/FollowUpCard";
 import DefinitionsForm from "@/components/creation/DefinitionsForm";
 import PhaseTimeline from "@/components/creation/PhaseTimeline";
 import ProgressStepper from "@/components/creation/ProgressStepper";
-import DailiesCalendar from "@/components/creation/TaskCalendar2";
+import DailiesCalendar from "@/components/creation/TaskCalendar";
 import { APIResponse, Phase, PhaseGeneration, DefinitionsCreate } from "@/types/goals.d";
 import { loadInitialState, sendUserInput, confirmPhase, submitPhaseComment, } from "@/api/creation";
 

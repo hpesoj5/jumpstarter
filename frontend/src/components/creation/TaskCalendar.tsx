@@ -38,9 +38,10 @@ interface TaskModalProps {
     isOpen: boolean;
     mode: 'add' | 'edit';
     initialTaskData: TaskData;
+    modalPhases: string[];
     onClose: () => void;
     onSave: (data: TaskData) => void; 
-    onDelete?: (taskIndex: number) => void; // Deletes by index
+    onDelete?: (taskIndex: number) => void; // needs idx to delete
 }
 
 export const transformDailiesToEvents = (
@@ -78,7 +79,7 @@ const defaultModalData: TaskData = {
 // --- TaskModal Component ---
 
 const TaskModal: React.FC<TaskModalProps> = ({ 
-    isOpen, mode, initialTaskData, onClose, onSave, onDelete 
+    isOpen, mode, initialTaskData, modalPhases, onClose, onSave, onDelete,
 }) => {
     const [formData, setFormData] = useState<TaskData>(initialTaskData);
 
@@ -91,7 +92,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
     const isEditMode = mode === 'edit';
     const title = isEditMode ? 'Edit/Delete Daily Task' : 'Add New Daily Task';
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setFormData(prev => ({ 
             ...prev, 
@@ -119,18 +120,23 @@ const TaskModal: React.FC<TaskModalProps> = ({
                 <div className="p-6 border-b border-gray-200">
                     <h3 className="text-2xl font-bold text-gray-800">{title}</h3>
                 </div>
-                
+
+                {/* Task Description */}
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     
                     <div>
                         <label className="block text-sm font-medium text-gray-700">Phase</label>
-                        <input
-                            type="text"
+                        <select
                             name="phaseTitle"
                             value={formData.phaseTitle}
-                            readOnly
-                            className="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500 cursor-not-allowed"
-                        />
+                            onChange={handleChange}
+                            required
+                            className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm p-3 focus:ring-indigo-500 focus:border-indigo-500"
+                        >
+                        {modalPhases.map((phase) => (
+                            <option key={phase} value={phase}>{phase}</option>
+                        ))}
+                    </select>
                     </div>
 
                     {/* Task Description */}
@@ -250,6 +256,11 @@ export default function DailiesCalendar(
         () => transformDailiesToEvents(dailiesData),
         [dailiesData],
     );
+
+    const currentPhaseIndex = dailiesData.goal_phases.indexOf(dailiesData.curr_phase);
+    const allowedPhases = currentPhaseIndex >= 0
+        ? dailiesData.goal_phases.slice(0, currentPhaseIndex + 1)
+        : dailiesData.goal_phases;
 
     // Handler for clicking an empty time slot (ADD mode)
     const handleDateClick = useCallback((info: DateClickArg) => {
@@ -393,6 +404,7 @@ export default function DailiesCalendar(
                     isOpen={isModalOpen}
                     mode={modalMode}
                     initialTaskData={modalData}
+                    modalPhases={allowedPhases}
                     onClose={closeModal}
                     onSave={handleSave}
                     onDelete={handleDelete}
