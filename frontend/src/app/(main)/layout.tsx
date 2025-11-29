@@ -3,12 +3,7 @@ import "@/styles/globals.css";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
 
-export const metadata = {
-    title: "Goal Creation",
-    description: "Start building your dream today",
-};
-
-export default function CreateLayout({ children }: { children: ReactNode }) {
+export default function MainLayout({ children }: { children: ReactNode }) {
     return (
         <>
             {/* Sidebar (left) */}
