@@ -12,7 +12,7 @@ from backend.schemas import (FollowUp,
                             DefinitionsCreate, 
                             CurrentState, FixedResources, Constraints, GoalPrerequisites, 
                             PhaseGeneration, PhaseCreate,
-                            DailiesGeneration, )
+                            DailiesGeneration, DailiesPost,)
 from backend.utils.system_instruction import SYSTEM_INSTRUCTION, DAILIES_GENERATION_PROMPT
 
 from google import genai
@@ -62,10 +62,10 @@ def generate_dailies(session: ChatSession, phase: PhaseCreate, db: Session=Depen
 
     all_phases_dailies = []
     if session.dailies_obj:
-        all_phases_dailies = DailiesGeneration.model_validate_json(session.dailies_obj).dailies
-    
+        all_phases_dailies = DailiesPost.model_validate_json(session.dailies_obj).dailies
+        
     current_planning_date = phase.start_date
-    print(f"phase: {phase.title}, start date: {phase.start_date}, end date: {phase.end_date}")
+
     while current_planning_date <= phase.end_date:
         if current_planning_date > phase.end_date:
                 break
@@ -93,7 +93,7 @@ def generate_dailies(session: ChatSession, phase: PhaseCreate, db: Session=Depen
         )
         response = parse_response(response)
         new_tasks = response.dailies
-        print(new_tasks)
+
         valid_new_tasks = [t for t in new_tasks if t.dailies_date <= phase.end_date]
         all_phases_dailies.extend(valid_new_tasks)
         if valid_new_tasks != []:
@@ -102,7 +102,6 @@ def generate_dailies(session: ChatSession, phase: PhaseCreate, db: Session=Depen
         else:
             current_planning_date += datetime.timedelta(days=14)
     
-    print(all_phases_dailies)
     return DailiesGeneration(status="dailies_generated", dailies=all_phases_dailies)
 
 def parse_response(response): # can do more parsing but thats kinda a lot of work i.e. check for missing fields

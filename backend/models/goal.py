@@ -50,13 +50,8 @@ class Daily(Base):
     __tablename__ = "dailies"
     id = Column(Integer, primary_key=True, index=True)
     task_description = Column(String, nullable=False)
-<<<<<<< HEAD
     dailies_date = Column(Date, nullable=False)
     start_time = Column(Time, nullable=False)
-=======
-    start_date = Column(Date, nullable=False)
-    end_date = Column(Date, nullable=False)
->>>>>>> joseph
     estimated_time_minutes = Column(Integer, nullable=False)
     is_completed = Column(Boolean, default=False)
     

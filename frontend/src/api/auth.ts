@@ -27,16 +27,16 @@ export async function login(email: string, password: string) {
     return res.json(); // contains token
 }
 
-export const getUserId = (): number => {
-    try {
-        const token =
-            typeof window !== "undefined"
-                ? localStorage.getItem("token")
-                : null;
-        if (!token) return -1;
-        const decoded = jwtDecode<TokenPayload>(token);
-        return decoded.uid ?? -1;
-    } catch {
-        return -1;
-    }
-};
+// export const getUserId = (): number => {
+//     try {
+//         const token =
+//             typeof window !== "undefined"
+//                 ? localStorage.getItem("token")
+//                 : null;
+//         if (!token) return -1;
+//         const decoded = jwtDecode<TokenPayload>(token);
+//         return decoded.uid ?? -1;
+//     } catch {
+//         return -1;
+//     }
+// };

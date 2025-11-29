@@ -115,7 +115,7 @@ export default function PhaseTimeline(
     { data, onConfirm, onCommentSubmit, disabled = false, }: {
     data: PhaseGeneration;
     onConfirm: (phases: Phase[]) => void;
-    onCommentSubmit: (comment: string) => void;
+    onCommentSubmit: (phases: Phase[], comment: string) => void;
     disabled?: boolean;
 }) {
     const [phases, setPhases] = useState<Phase[]>([]);
@@ -227,7 +227,7 @@ export default function PhaseTimeline(
                 {/* Action Buttons */}
                 <div className="flex flex-col md:flex-row md:space-x-4 space-y-2 md:space-y-0 mt-2">
                     <button
-                        onClick={() => onCommentSubmit(comment)}
+                        onClick={() => onCommentSubmit(phases, comment)}
                         disabled={disabled || !comment.trim()}
                         className={`
                             px-4 py-2 rounded text-white w-full md:w-auto font-medium 

@@ -17,7 +17,8 @@ from backend.schemas import (FollowUp,
                             DefinitionsCreate,
                             GoalPrerequisites, 
                             PhaseGeneration,
-                            DailiesGeneration,)
+                            DailiesGeneration,
+                            DailiesPost)
 
 def insert_session(db: Session=Depends(get_db)): # will not commit in this function. commits should happen with what calls it.
     try:
@@ -175,8 +176,8 @@ def update_session_phases(session: ChatSession, phases, db: Session=Depends(get_
 
 def update_session_dailies(session: ChatSession, dailies, db: Session=Depends(get_db)): # each time use confirms the dailies for given phase, update the new set of all dailies
     try:
-        if isinstance(dailies, DailiesGeneration):
-            dailies = dailies.model_dump_json()
+        if isinstance(dailies, DailiesPost):
+            dailies = json.dumps(dailies.model_dump(mode="json")) # nested pydantic models
         session.dailies_obj = dailies
         
         db.add(session)
@@ -250,7 +251,7 @@ def insert_phases(phases_data, goal_id, db: Session=Depends(get_db)): # insert p
         db.rollback() 
         return False
 
-def insert_dailies(dailies_data: DailiesGeneration, db_phases_list, db: Session=Depends(get_db)): # insert dailies into dailies table. same logic as insert_data
+def insert_dailies(dailies_data: DailiesPost, db_phases_list, db: Session=Depends(get_db)): # insert dailies into dailies table. same logic as insert_data
     try:
         phase_title_to_id = {
             phase.title: phase.id 

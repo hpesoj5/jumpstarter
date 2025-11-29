@@ -2,7 +2,7 @@ const GOAL_STEPS = [
     { id: "define_goal", label: "Define Goal" },
     { id: "get_prerequisites", label: "Clarify Details" },
     { id: "refine_phases", label: "Build Plan" },
-    { id: "refine_dailies", label: "Daily Actions" },
+    { id: "generate_dailies", label: "Daily Actions" },
 ];
   
 type StepID = typeof GOAL_STEPS[number]["id"];

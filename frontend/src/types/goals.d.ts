@@ -23,13 +23,13 @@ export type PhaseGeneration = {
 
 export type DailyCreate = {
     task_description: string;
-    start_date: string;  // ISO date string, e.g. "2025-01-01"
+    dailies_date: string;  // ISO date string, e.g. "2025-01-01"
     start_time: string;  // ISO time string, e.g. "09:30:00"
     estimated_time_minutes: number;
     phase_title: string;
 };
 export type DailiesGeneration = {
-    status: "generation_in_process" | "dailies_generated";
+    status: "dailies_generated";
     dailies: DailyCreate[];
     last_daily_date: string; // ISO date string
 };
@@ -57,11 +57,9 @@ export type APIResponse =
     };
 
 export interface APIRequest {
-    user_id: int;
     user_input: string;
 }
 
 export interface ConfirmRequest {
-    user_id: int;
     confirm_obj: DefinitionsCreate | PhaseGeneration | DailiesGeneration;
 }
