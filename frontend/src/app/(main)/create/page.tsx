@@ -18,6 +18,7 @@ export default function CreatePage() {
         try {
             const newResponse = await fn();
             setData(newResponse);
+            console.log(newResponse)
         } catch (err) {
             console.error(err);
         } finally {
