@@ -4,16 +4,10 @@ import { API_URL } from "@/api/config";
 export async function loadInitialState(): Promise<APIResponse> {
     const res = await fetch(`${API_URL}/create/load`, {
         method: "POST",
-<<<<<<< HEAD
         headers: { 
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
-=======
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    "Content-Type": "application/json" }
->>>>>>> origin/Sk
     });
     if (!res.ok) throw new Error("Failed to load goal state");
     return res.json();
@@ -40,15 +34,10 @@ export async function confirmPhase(confirm_obj: DefinitionsCreate | PhaseGenerat
     const payload: ConfirmRequest = { confirm_obj, };
     const res = await fetch(`${API_URL}/create/confirm`, {
         method: "POST",
-<<<<<<< HEAD
         headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json"
         },
-=======
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}`,
-                    "Content-Type": "application/json" },
->>>>>>> origin/Sk
         body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error("Failed to confirm definitions/phases");
