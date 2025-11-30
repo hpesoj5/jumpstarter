@@ -1,12 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.db.session import Base, engine
-from backend.routers import creation, auth, dashboard
+from backend.routers import creation, auth, dashboard, goals
 
 app = FastAPI(title="Goal Tracker API")
 app.include_router(creation.router)
 app.include_router(auth.router)
 app.include_router(dashboard.router)
+app.include_router(goals.router)
 
 app.add_middleware(
     CORSMiddleware,

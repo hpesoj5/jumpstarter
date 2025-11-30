@@ -4,7 +4,8 @@ import FollowUpCard from "@/components/creation/FollowUpCard";
 import DefinitionsForm from "@/components/creation/DefinitionsForm";
 import PhaseTimeline from "@/components/creation/PhaseTimeline";
 import ProgressStepper from "@/components/creation/ProgressStepper";
-import { APIResponse, PhaseGeneration, DefinitionsCreate } from "@/types/goals.d";
+import DailiesCalendar from "@/components/creation/TaskCalendar";
+import { APIResponse, Phase, PhaseGeneration, DefinitionsCreate } from "@/types/goals.d";
 import { loadInitialState, sendUserInput, confirmPhase, submitPhaseComment, } from "@/api/creation";
 
 export default function CreatePage() {
@@ -65,13 +66,25 @@ export default function CreatePage() {
                 return (
                     <PhaseTimeline
                         data={response_data}
-                        onConfirm={(phases: PhaseGeneration["phases"]) => {
-                            const newObj: PhaseGeneration = { ...response_data, phases };
-                            fetchData(() => confirmPhase(newObj));
+                        onConfirm={(phases: Phase[]) => {
+                            const newPhase: PhaseGeneration = { status: "phases_generated", phases: phases };
+                            fetchData(() => confirmPhase(newPhase));
                         }}
-                        onCommentSubmit={(comment: string) =>
-                            fetchData(() => submitPhaseComment(response_data as PhaseGeneration, comment))
-                        }
+                        onCommentSubmit={(phases: Phase[], comment: string) => {
+                            const newPhase: PhaseGeneration = { status: "phases_generated", phases: phases };
+                            fetchData(() => submitPhaseComment(newPhase, comment))
+                        }}
+                        disabled={disabled}
+                    />
+                );
+
+                case "dailies_generated":
+                return (
+                    <DailiesCalendar 
+                        dailiesPost={response_data} 
+                        onConfirm={(dailiesPost) => {
+                            fetchData(() => confirmPhase(dailiesPost))
+                        }}
                         disabled={disabled}
                     />
                 );

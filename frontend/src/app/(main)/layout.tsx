@@ -3,12 +3,7 @@ import "@/styles/globals.css";
 import Sidebar from "@/components/layout/Sidebar";
 import Navbar from "@/components/layout/Navbar";
 
-export const metadata = {
-title: "Dashboard",
-description: "Track your goals and progress visually",
-};
-
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default function MainLayout({ children }: { children: ReactNode }) {
     return (
         <>
             {/* Sidebar (left) */}
