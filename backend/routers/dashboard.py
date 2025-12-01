@@ -20,14 +20,14 @@ def get_stats(user_id: int = Depends(get_current_user), db: Session = Depends(ge
     current_date = date.today()
     goals = (
         db.query(
-            func.sum(case((models.Goal.is_completed == False, 1), else_=0)).label("ongoing"),
-            func.sum(case((models.Goal.is_completed == True, 1), else_=0)).label("completed"),
+            func.sum(case((models.Goal.is_completed == False, 1)), else_=0).label("ongoing"),
+            func.sum(case((models.Goal.is_completed == True, 1)), else_=0).label("completed"),
         )
         .filter(models.Goal.owner_id == user_id)
         .first()
     )
-    ongoing_goals = goals.ongoing
-    completed_goals = goals.completed
+    ongoing_goals = goals.ongoing if goals.ongoing != None else 0
+    completed_goals = goals.completed if goals.completed != None else 0
     tasks_today_list = (
         db.query(models.Daily)
         .join(models.Daily.phase)
@@ -53,8 +53,8 @@ def get_stats(user_id: int = Depends(get_current_user), db: Session = Depends(ge
         )
         .first()
     )
-    remaining_tasks_today = tasks.ongoing
-    completed_tasks_today = tasks.completed
+    remaining_tasks_today = tasks.ongoing if tasks.ongoing != None else 0
+    completed_tasks_today = tasks.completed if tasks.completed != None else 0
     return {
         "remaining_tasks_today": remaining_tasks_today,
         "completed_tasks_today": completed_tasks_today,

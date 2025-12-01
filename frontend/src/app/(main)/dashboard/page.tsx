@@ -6,6 +6,7 @@ import { getStats } from "@/api/dashboard";
 import type { TokenPayload } from "@/api/config";
 import { StatCard } from "@/components/dashboard/card";
 import { Daily, DailyTable, EmptyDailies } from "@/components/dashboard/dailylist";
+import { ProgressCard } from "@/components/dashboard/goalprogress";
 import { jwtDecode } from "jwt-decode";
 
 interface Stats {
@@ -82,7 +83,15 @@ export default function Dashboard() {
                 )}
             </Grid>
             <Grid size={{ lg: 4, sm: 12 }}>
-
+                <ProgressCard
+                    goal={{
+                        title: "Test Goal",
+                        total_dailies: 5,
+                        completed_dailies: 2,
+                        deadline: new Date("2025-12-25T10:30:00Z"),
+                    }}
+                    current_date={new Date("2025-12-01T10:30:00Z")}
+                />
             </Grid>
         </Grid>
     );
