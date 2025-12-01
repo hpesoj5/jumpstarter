@@ -21,6 +21,11 @@ from backend.schemas import (FollowUp, APIResponse, APIRequest, ConfirmRequest,
 
 router = APIRouter(prefix="/create", tags=["Creation", "Goals"])
 
+@router.post("/reset", response_model=None)
+def load(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+    change_user_session(user_id, db)
+    return None
+
 @router.post("/load", response_model=APIResponse)
 def load(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
     last_response = get_model_latest_response(user_id, db)
