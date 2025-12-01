@@ -1,5 +1,6 @@
 "use client"
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import FollowUpCard from "@/components/creation/FollowUpCard";
 import DefinitionsForm from "@/components/creation/DefinitionsForm";
 import PhaseTimeline from "@/components/creation/PhaseTimeline";
@@ -7,16 +8,24 @@ import ProgressStepper from "@/components/creation/ProgressStepper";
 import DailiesCalendar from "@/components/creation/TaskCalendar";
 import { APIResponse, Phase, PhaseGeneration, DefinitionsCreate } from "@/types/goals.d";
 import { loadInitialState, sendUserInput, confirmPhase, submitPhaseComment, } from "@/api/creation";
+import { GOAL_CREATED_EVENT } from "@/components/layout/Sidebar"
 
 export default function CreatePage() {
     const [apiresonse, setData] = useState<APIResponse | null>(null);
     const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     // Load initial state from backend
     const fetchData = async (fn: () => Promise<APIResponse>) => {
         setLoading(true);
         try {
             const newResponse = await fn();
+            if (newResponse.phase_tag === 'goal_completed') {
+                window.dispatchEvent(new Event(GOAL_CREATED_EVENT));
+                router.push('/create');  // redirect to new goal when implemented
+                fetchData(loadInitialState); // not needed if redirect
+                return;
+            }
             setData(newResponse);
             console.log(newResponse)
         } catch (err) {
@@ -27,7 +36,7 @@ export default function CreatePage() {
     };
 
     useEffect(() => {
-    fetchData(loadInitialState);
+        fetchData(loadInitialState);
     }, []);
 
     if (!apiresonse) return <p>Loading...</p>;

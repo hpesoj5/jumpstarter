@@ -8,26 +8,35 @@ import GoalSidebarItem from "@/components/goals/GoalSidebarItem";
 
 type Goal = { id: number; title: string };
 
+export const GOAL_CREATED_EVENT = 'goalCreated';
+
 export default function Sidebar() {
     const [goals, setGoals] = useState<Goal[]>([]);
     const router = useRouter();
 
-    useEffect(() => {
-        async function fetchGoals() {
-            try {
-                const res = await fetch(`${API_URL}/goals/titles`, {
-                    method: "POST",
-                    headers: { Authorization: `Bearer ${localStorage.getItem("token")}`,
-                                "Content-Type": "application/json" }
-                });
-                const data: Goal[] = await res.json();
-                setGoals(data);
-            } catch (error) {
-                console.error("Failed to fetch goals", error);
-            }
+    async function fetchGoals() {
+        try {
+            const res = await fetch(`${API_URL}/goals/titles`, {
+                method: "POST",
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}`,
+                            "Content-Type": "application/json" }
+            });
+            const data: Goal[] = await res.json();
+            setGoals(data);
+        } catch (error) {
+            console.error("Failed to fetch goals", error);
         }
-    
+    }
+    useEffect(() => {
         fetchGoals();
+
+        const handleGoalCreated = () => {
+            fetchGoals();
+        };
+        window.addEventListener(GOAL_CREATED_EVENT, handleGoalCreated);
+        return () => {
+            window.removeEventListener(GOAL_CREATED_EVENT, handleGoalCreated);
+        };
     }, []);
 
     return (

@@ -16,7 +16,8 @@ from backend.schemas import (FollowUp, APIResponse, APIRequest, ConfirmRequest,
                             DefinitionsCreate, 
                             GoalPrerequisites, 
                             PhaseGeneration,
-                            DailiesGeneration, DailiesPost,)
+                            DailiesGeneration, DailiesPost,
+                            GoalCompleted)
 
 router = APIRouter(prefix="/create", tags=["Creation", "Goals"])
 
@@ -87,7 +88,9 @@ def confirm(request: ConfirmRequest, user_id = Depends(get_current_user), db: Se
             db_phases_list = insert_phases(phases_json, goal_db.id, db)
             insert_dailies(confirm_obj, db_phases_list, db)
             change_user_session(user_id, db)
-            return load(user_id, db)
+
+            return APIResponse(phase_tag="goal_completed", ret_obj=GoalCompleted(goal_title=goal_json['title'], goal_id=goal_db.id) )
+            #return load(user_id, db)
         else: # transition to generating next phase's dailies
             next_phase = phase_titles.index(curr_phase)+1
             

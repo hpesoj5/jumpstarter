@@ -37,7 +37,13 @@ export type DailiesPost = DailiesGeneration & {
     goal_phases: string[];
     curr_phase: string;
 };
-  
+
+export type GoalCompleted = {
+    status: 'goal_completed';
+    goal_title: string;
+    goal_id: int;
+};
+
 export type APIResponse =
     | {
         phase_tag: "define_goal";
@@ -51,6 +57,9 @@ export type APIResponse =
     } | {
         phase_tag: "generate_dailies";
         ret_obj: DailiesPost;
+    } | {
+        phase_tag: "goal_completed"
+        ret_obj: GoalCompleted;
     };
 
 export interface APIRequest {
