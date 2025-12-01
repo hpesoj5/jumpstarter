@@ -1,10 +1,10 @@
 import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
-import { EventClickArg, } from '@fullcalendar/core';
+import { EventClickArg, EventDropArg } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
-import interactionPlugin, { DateClickArg } from '@fullcalendar/interaction'; 
+import interactionPlugin, { DateClickArg, EventResizeDoneArg } from '@fullcalendar/interaction'; 
 import { addMinutes, format } from "date-fns";
 import { DailyCreate, DailiesPost, DailiesGeneration } from "@/types/goals"
 
@@ -12,6 +12,8 @@ interface FullCalendarEvent {
     title: string;
     start: Date; 
     end: Date;   
+    backgroundColor: string;
+    borderColor: string;
 
     extendedProps: {
         phaseTitle: string;
@@ -44,17 +46,41 @@ interface TaskModalProps {
     onDelete?: (taskIndex: number) => void; // needs idx to delete
 }
 
+const COLOR_PALETTE = [
+    '#A3E635', // Lime Green
+    '#4ADE80', // Emerald Green
+    '#34D399', // Medium Sea Green
+    '#06B6D4', // Cyan
+    '#3B82F6', // Blue
+    '#8B5CF6', // Violet
+    '#EC4899', // Pink
+    '#F43F5E', // Rose
+    '#F97316', // Orange
+    '#FBBF24', // Amber
+    '#A8A29E', // Stone Gray
+    '#7C3AED', // Deep Purple
+];
+type PhaseColorMap = Record<string, string>;
+const getPhaseColor = (phaseTitle: string, phaseColorMap: PhaseColorMap) => {
+    return phaseColorMap[phaseTitle] || '#e0e0e0'; // Use the map, fall back to gray
+};
+
 export const transformDailiesToEvents = (
     dailiesGeneration: DailiesGeneration,
+    phaseColorMap: PhaseColorMap
 ): FullCalendarEvent[] => {
     return dailiesGeneration.dailies.map((daily: DailyCreate, index: number) => {
         const start = new Date(`${daily.dailies_date}T${daily.start_time}`);
         const end = addMinutes(start, daily.estimated_time_minutes);
+        const color = getPhaseColor(daily.phase_title, phaseColorMap);
 
         return {
             title: `${daily.phase_title}: ${daily.task_description}`,
             start: start,
             end: end,
+            backgroundColor: color,
+            borderColor: color,
+
             extendedProps: {
                 phaseTitle: daily.phase_title,
                 estimatedTimeMinutes: daily.estimated_time_minutes,
@@ -252,9 +278,17 @@ export default function DailiesCalendar(
         setDailiesData(dailiesPost);
     }, [dailiesPost]);
 
+    const phaseColorMap = useMemo(() => {
+        const map: PhaseColorMap = {};
+        dailiesPost.goal_phases.forEach((title, index) => {
+            map[title] = COLOR_PALETTE[index % COLOR_PALETTE.length];
+        });
+        return map;
+    }, [dailiesPost.goal_phases]);
+
     const events = useMemo(
-        () => transformDailiesToEvents(dailiesData),
-        [dailiesData],
+        () => transformDailiesToEvents(dailiesData, phaseColorMap),
+        [dailiesData, phaseColorMap],
     );
 
     const currentPhaseIndex = dailiesData.goal_phases.indexOf(dailiesData.curr_phase);
@@ -346,6 +380,86 @@ export default function DailiesCalendar(
         }));
     }, [dailiesData.dailies]);
 
+    
+    const handleEventResize = useCallback((resizeInfo: EventResizeDoneArg) => {
+        const event = resizeInfo.event;
+        const taskIndex = event.extendedProps.taskIndex;
+        
+        if (!event.start || !event.end || typeof taskIndex !== 'number') {
+            return;
+        }
+    
+        const durationMs = event.end.getTime() - event.start.getTime(); // in ms
+        const newEstimatedTimeMinutes = Math.round(durationMs / 60000); // 60,000 ms per minute
+    
+        const newStartDate = format(event.start, 'yyyy-MM-dd');
+        const newStartTime = format(event.start, 'HH:mm');
+    
+        setDailiesData(prev => {
+            const newDailies = [...prev.dailies];
+            
+            if (taskIndex >= 0 && taskIndex < newDailies.length) {
+                const updatedTask = { ...newDailies[taskIndex] };
+                
+                // Apply the new values
+                updatedTask.estimated_time_minutes = newEstimatedTimeMinutes;
+                updatedTask.dailies_date = newStartDate;
+                updatedTask.start_time = newStartTime;
+                
+                newDailies[taskIndex] = updatedTask;
+    
+                return {
+                    ...prev,
+                    dailies: newDailies
+                };
+            }
+            return prev;
+        });
+    
+    }, []);
+
+    const handleEventDrop = useCallback((dropInfo: EventDropArg) => {
+        const event = dropInfo.event;
+        const extendedProps = event.extendedProps as { 
+            phaseTitle: string, 
+            estimatedTimeMinutes: number, 
+            taskIndex: number, 
+            startDate: string, 
+            startTime: string, 
+            taskDescription: string,
+            [key: string]: any
+        };
+        const taskIndex = extendedProps.taskIndex;
+        
+        if (!event.start || !event.end || typeof taskIndex !== 'number') {
+            dropInfo.revert(); 
+            return;
+        }
+    
+        const newStartDate = format(event.start, 'yyyy-MM-dd');
+        const newStartTime = format(event.start, 'HH:mm');
+    
+        setDailiesData(prev => {
+            const newDailies = [...prev.dailies];
+            
+            if (taskIndex >= 0 && taskIndex < newDailies.length) {
+                const updatedTask = { ...newDailies[taskIndex] };
+                
+                updatedTask.dailies_date = newStartDate;
+                updatedTask.start_time = newStartTime;   
+                
+                newDailies[taskIndex] = updatedTask;
+    
+                return {
+                    ...prev,
+                    dailies: newDailies
+                };
+            }
+            return prev;
+        });
+    
+    }, []);
+
     return (
         <div className="p-4 bg-gray-50 min-h-screen">
             <div className="bg-white rounded-xl shadow-2xl max-w-4xl mx-auto my-8 p-6">
@@ -374,19 +488,29 @@ export default function DailiesCalendar(
                     dateClick={disabled? undefined : handleDateClick}
                     eventClick={disabled? undefined : handleEventClick}
 
+                    eventDurationEditable={true}
+                    eventResize={disabled ? undefined : handleEventResize}
+                    eventDrop={disabled ? undefined : handleEventDrop}
                     height="auto"
 
                     // Custom content rendering for event content
-                    eventContent={(eventInfo) => (
-                        <div className="p-1 text-xs sm:text-sm overflow-hidden text-white">
-                            <b className="block font-semibold">{eventInfo.timeText}</b>
-                            <i className="block truncate">{eventInfo.event.title}</i>
-                            <p className="text-[0.6em] opacity-80 m-0">
-                            Phase: {eventInfo.event.extendedProps.phaseTitle} ({
-                            eventInfo.event.extendedProps.estimatedTimeMinutes} min)
-                            </p>
-                        </div>
-                    )}
+                    eventContent={(eventInfo) => {
+                        return (
+                            <div 
+                                className="p-1 text-xs sm:text-sm h-full flex flex-col justify-start overflow-hidden"
+                                style={{
+                                    backgroundColor: eventInfo.event.backgroundColor,
+                                    color: 'black'
+                                }}
+                            >
+                                <i className="block font-semibold truncate leading-tight">{eventInfo.event.title}</i>
+                                <p className="text-[0.6em] opacity-90 m-0 leading-snug">
+                                Phase: {eventInfo.event.extendedProps.phaseTitle} ({
+                                eventInfo.event.extendedProps.estimatedTimeMinutes} min)
+                                </p>
+                            </div>
+                        )}
+                    }
                 />
 
                 <button

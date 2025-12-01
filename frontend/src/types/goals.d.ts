@@ -37,23 +37,29 @@ export type DailiesPost = DailiesGeneration & {
     goal_phases: string[];
     curr_phase: string;
 };
-  
+
+export type GoalCompleted = {
+    status: 'goal_completed';
+    goal_title: string;
+    goal_id: int;
+};
+
 export type APIResponse =
-  | {
-      phase_tag: "define_goal";
-      ret_obj: FollowUp | DefinitionsCreate;
-    }
-  | {
-      phase_tag: "get_prerequisites";
-      ret_obj: FollowUp;
-    }
-  | {
-      phase_tag: "refine_phases";
-      ret_obj: PhaseGeneration;
-    }
-  | {
-      phase_tag: "generate_dailies";
-      ret_obj: DailiesPost;
+    | {
+        phase_tag: "define_goal";
+        ret_obj: FollowUp | DefinitionsCreate;
+    } | {
+        phase_tag: "get_prerequisites";
+        ret_obj: FollowUp;
+    } | {
+        phase_tag: "refine_phases";
+        ret_obj: PhaseGeneration;
+    } | {
+        phase_tag: "generate_dailies";
+        ret_obj: DailiesPost;
+    } | {
+        phase_tag: "goal_completed"
+        ret_obj: GoalCompleted;
     };
 
 export interface APIRequest {

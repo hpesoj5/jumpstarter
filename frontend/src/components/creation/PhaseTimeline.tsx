@@ -130,11 +130,11 @@ export default function PhaseTimeline(
 
     const updatePhase = (idx: number, field: keyof Phase, value: string) => {
         setPhases((prev) => {
-        const updated = prev.map((p, i) =>
-            i === idx ? { ...p, [field]: value } : p
-        );
-        validateDates(updated, idx);
-        return updated;
+            const updated = prev.map((p, i) =>
+                i === idx ? { ...p, [field]: value } : p
+            );
+            validateDates(updated, idx);
+            return updated;
         });
     };
 
@@ -161,9 +161,9 @@ export default function PhaseTimeline(
     const addPhase = (idx: number, position: "left" | "right") => {
         const newPhase: Phase = { title: "", description: "", start_date: "", end_date: "" };
         setPhases((prev) => {
-        const updated = [...prev];
-        updated.splice(position === "left" ? idx : idx + 1, 0, newPhase);
-        return updated;
+            const updated = [...prev];
+            updated.splice(position === "left" ? idx : idx + 1, 0, newPhase);
+            return updated;
         });
     };
 

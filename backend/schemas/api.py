@@ -7,9 +7,14 @@ class FollowUp(BaseModel):
     status: Literal['follow_up_required'] = 'follow_up_required'
     question_to_user: str = Field(description="A single, specific, question to the user.")
 
+class GoalCompleted(BaseModel):
+    status: Literal['goal_completed'] = 'goal_completed'
+    goal_title: str
+    goal_id: int
+
 class APIResponse(BaseModel):
-    phase_tag: Literal["define_goal", "get_prerequisites", "refine_phases", "generate_dailies"]
-    ret_obj: Union[FollowUp , DefinitionsCreate , GoalPrerequisites , PhaseGeneration , DailiesPost]
+    phase_tag: Literal["define_goal", "get_prerequisites", "refine_phases", "generate_dailies", "goal_completed"]
+    ret_obj: Union[FollowUp , DefinitionsCreate , GoalPrerequisites , PhaseGeneration , DailiesPost, GoalCompleted]
 
 class APIRequest(BaseModel):
     user_input: str

@@ -25,7 +25,6 @@ export async function sendUserInput(user_input: string): Promise<APIResponse> {
         },
         body: JSON.stringify(payload),
     });
-    console.log(res)
     if (!res.ok) throw new Error("Failed to send user input");
     return res.json();
 }
