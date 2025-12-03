@@ -14,6 +14,7 @@ from backend.schemas import (FollowUp,
                             PhaseGeneration, PhaseCreate,
                             DailiesGeneration, DailiesPost,)
 from backend.utils.system_instruction import SYSTEM_INSTRUCTION, DAILIES_GENERATION_PROMPT
+from backend.utils.instruction_chain import BASE_INSTRUCTION, PHASE_INSTRUCTIONS
 
 from google import genai
 from google.genai.types import Content, Part
@@ -26,35 +27,91 @@ backend_dir = Path(__file__).resolve().parent.parent
 load_dotenv(backend_dir / ".env")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
+# def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(get_db)):
+#     responseSchema = FollowUp | DefinitionsCreate | GoalPrerequisites | PhaseGeneration
+#     client = genai.Client(api_key=GOOGLE_API_KEY)
+#     DATE_FORMAT = '%Y-%m-%d'
+#     current_date_str = date.today().strftime(DATE_FORMAT)
+#     chat_history = pickle.loads(session.session_data)
+    
+#     new_user_message = Content(
+#         parts=[Part.from_text(text=f'CURRENT_PHASE = "{session.phase_tag}"\n{user_input}')],
+#         role='user'
+#     )
+#     chat_history.append(new_user_message)
+#     return client.models.generate_content(
+#         model='gemini-2.5-flash-lite',
+#         contents = chat_history,
+#         config={
+#             "system_instruction": SYSTEM_INSTRUCTION.format(
+#                 current_date_str=current_date_str,
+#                 followUp=FollowUp.model_json_schema(),
+#                 definitionsCreate=DefinitionsCreate.model_json_schema(),
+#                 goalPrerequisites=GoalPrerequisites.model_json_schema(),
+#                 currentState=CurrentState.model_json_schema(),
+#                 fixedResources=FixedResources.model_json_schema(),
+#                 constraints=Constraints.model_json_schema(),
+#                 phaseGeneration=PhaseGeneration.model_json_schema(),
+#                 dailiesGeneration=DailiesGeneration.model_json_schema(),
+#             ),
+#             "response_mime_type": "application/json",
+#             "response_schema": responseSchema,
+#         },
+#     )
+
 def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(get_db)):
-    responseSchema = FollowUp | DefinitionsCreate | GoalPrerequisites | PhaseGeneration
     client = genai.Client(api_key=GOOGLE_API_KEY)
+    
+    current_phase = session.phase_tag
+    
+    if current_phase == "define_goal":
+        response_schema = FollowUp | DefinitionsCreate
+        prompt_template = PHASE_INSTRUCTIONS["define_goal"]
+        format_args = {
+            "followUp": FollowUp.model_json_schema(),
+            "definitionsCreate": DefinitionsCreate.model_json_schema()
+        }
+
+    elif current_phase == "get_prerequisites":
+        response_schema = FollowUp | GoalPrerequisites
+        prompt_template = PHASE_INSTRUCTIONS["get_prerequisites"]
+        format_args = {
+            "goal_context": session.goal_obj,
+            "followUp": FollowUp.model_json_schema(),
+            "goalPrerequisites": GoalPrerequisites.model_json_schema()
+        }
+
+    elif current_phase in ["generate_phases", "refine_phases"]:
+        response_schema = PhaseGeneration
+        prompt_template = PHASE_INSTRUCTIONS[current_phase]
+        format_args = {
+            "goal_context": session.goal_obj,
+            "prereq_context": session.prereq_obj,
+            "phaseGeneration": PhaseGeneration.model_json_schema()
+        }
+    
+    else:
+        raise ValueError(f"Unknown phase: {current_phase}")
+
     DATE_FORMAT = '%Y-%m-%d'
     current_date_str = date.today().strftime(DATE_FORMAT)
+    full_system_instruction = BASE_INSTRUCTION.format(current_date_str=current_date_str) + \
+                              prompt_template.format(**format_args)
+
     chat_history = pickle.loads(session.session_data)
-    
     new_user_message = Content(
-        parts=[Part.from_text(text=f'CURRENT_PHASE = "{session.phase_tag}"\n{user_input}')],
+        parts=[Part.from_text(text=user_input)],
         role='user'
     )
     chat_history.append(new_user_message)
+
     return client.models.generate_content(
         model='gemini-2.5-flash-lite',
-        contents = chat_history,
+        contents=chat_history,
         config={
-            "system_instruction": SYSTEM_INSTRUCTION.format(
-                current_date_str=current_date_str,
-                followUp=FollowUp.model_json_schema(),
-                definitionsCreate=DefinitionsCreate.model_json_schema(),
-                goalPrerequisites=GoalPrerequisites.model_json_schema(),
-                currentState=CurrentState.model_json_schema(),
-                fixedResources=FixedResources.model_json_schema(),
-                constraints=Constraints.model_json_schema(),
-                phaseGeneration=PhaseGeneration.model_json_schema(),
-                dailiesGeneration=DailiesGeneration.model_json_schema(),
-            ),
+            "system_instruction": full_system_instruction,
             "response_mime_type": "application/json",
-            "response_schema": responseSchema,
+            "response_schema": response_schema,
         },
     )
 
