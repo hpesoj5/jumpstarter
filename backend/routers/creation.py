@@ -68,6 +68,7 @@ def confirm(request: ConfirmRequest, user_id = Depends(get_current_user), db: Se
     elif isinstance(confirm_obj, GoalPrerequisites):
         update_session_prereq(user_db_session, confirm_obj, db)
         update_session_phase_tag(user_db_session, "refine_phases", db)
+        update_session_data(user_db_session, [], db) # clear chat history
         user_input=f'Generate the most suitable initial plan according to my goal, deadline and limitations.'
         query_request=APIRequest(user_input=user_input)
         return query(query_request, user_id, db)

@@ -192,10 +192,10 @@ export default function PhaseTimeline(
     };
 
     return (
-        <div className="space-y-6">
+        <div className="w-full space-y-6 overflow-x-auto">
             <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                 <SortableContext items={phases.map((_, i) => i)} strategy={horizontalListSortingStrategy}>
-                <div className="w-full overflow-x-auto">
+                <div className="overflow-x-auto">
                     <div className="flex flex-col md:flex-row md:flex-nowrap space-y-4 md:space-y-0 md:space-x-4">
                         {phases.map((phase, idx) => (
                         <SortablePhase
