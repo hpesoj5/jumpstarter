@@ -1,6 +1,15 @@
 import { APIResponse, APIRequest, PhaseGeneration, DefinitionsCreate, ConfirmRequest, DailiesPost } from "@/types/goals.d";
 import { API_URL } from "@/api/config";
 
+export async function resetCreation(): Promise<void> {
+    const res = await fetch(`${API_URL}/create/reset`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "application/json" }
+    });
+    if (!res.ok) throw new Error("Failed to reset session");
+}
+
 export async function loadInitialState(): Promise<APIResponse> {
     const res = await fetch(`${API_URL}/create/load`, {
         method: "POST",

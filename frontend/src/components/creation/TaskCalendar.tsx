@@ -5,7 +5,8 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import listPlugin from '@fullcalendar/list';
 import interactionPlugin, { DateClickArg, EventResizeDoneArg } from '@fullcalendar/interaction'; 
-import { addMinutes, format } from "date-fns";
+import { addMinutes, format, } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz"
 import { DailyCreate, DailiesPost, DailiesGeneration } from "@/types/goals"
 
 interface FullCalendarEvent {
@@ -73,7 +74,6 @@ export const transformDailiesToEvents = (
         const start = new Date(`${daily.dailies_date}T${daily.start_time}`);
         const end = addMinutes(start, daily.estimated_time_minutes);
         const color = getPhaseColor(daily.phase_title, phaseColorMap);
-
         return {
             title: `${daily.phase_title}: ${daily.task_description}`,
             start: start,
@@ -298,10 +298,10 @@ export default function DailiesCalendar(
 
     // Handler for clicking an empty time slot (ADD mode)
     const handleDateClick = useCallback((info: DateClickArg) => {
-        // FullCalendar provides dateStr in YYYY-MM-DD[T]HH:MM:SS format
-        const datePart = info.dateStr.split('T')[0]; 
-        const timePart = info.dateStr.includes('T') ? format(info.date, 'HH:mm') : '09:00'; // Set default time if only date is clicked
-        
+        const utcDate = new Date(info.dateStr);
+        const datePart = formatInTimeZone(utcDate, 'UTC', 'yyyy-MM-dd');
+        const timePart = info.dateStr.includes('T') ? formatInTimeZone(utcDate, 'UTC', 'HH:mm') : '09:00';
+
         setModalData({
             ...defaultModalData,
             phaseTitle: dailiesData.curr_phase, // Phase is set to curr_phase
@@ -344,7 +344,7 @@ export default function DailiesCalendar(
             const newTask: DailyCreate = {
                 phase_title: taskToSave.phaseTitle,
                 dailies_date: taskToSave.startDate,
-                start_time: taskToSave.startTime,
+                start_time: taskToSave.startTime+':00Z',
                 estimated_time_minutes: taskToSave.estimatedTimeMinutes,
                 task_description: taskToSave.taskDescription,
             };
@@ -358,7 +358,7 @@ export default function DailiesCalendar(
                 newDailies[taskIndex] = {
                     phase_title: taskToSave.phaseTitle,
                     dailies_date: taskToSave.startDate,
-                    start_time: taskToSave.startTime,
+                    start_time: taskToSave.startTime+':00Z',
                     estimated_time_minutes: taskToSave.estimatedTimeMinutes,
                     task_description: taskToSave.taskDescription,
                 };
@@ -392,8 +392,8 @@ export default function DailiesCalendar(
         const durationMs = event.end.getTime() - event.start.getTime(); // in ms
         const newEstimatedTimeMinutes = Math.round(durationMs / 60000); // 60,000 ms per minute
     
-        const newStartDate = format(event.start, 'yyyy-MM-dd');
-        const newStartTime = format(event.start, 'HH:mm');
+        const newStartDate = formatInTimeZone(event.start, 'UTC' ,'yyyy-MM-dd');
+        const newStartTime = formatInTimeZone(event.start, 'UTC', 'HH:mm');
     
         setDailiesData(prev => {
             const newDailies = [...prev.dailies];
@@ -404,7 +404,7 @@ export default function DailiesCalendar(
                 // Apply the new values
                 updatedTask.estimated_time_minutes = newEstimatedTimeMinutes;
                 updatedTask.dailies_date = newStartDate;
-                updatedTask.start_time = newStartTime;
+                updatedTask.start_time = newStartTime+':00Z';
                 
                 newDailies[taskIndex] = updatedTask;
     
@@ -481,6 +481,7 @@ export default function DailiesCalendar(
                             listDaySideFormat: { weekday: 'long' }
                         },
                     }}
+                    timeZone='UTC'
                     events={events}
                     editable={!disabled}
                     selectable={!disabled}

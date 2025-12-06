@@ -21,6 +21,11 @@ from backend.schemas import (FollowUp, APIResponse, APIRequest, ConfirmRequest,
 
 router = APIRouter(prefix="/create", tags=["Creation", "Goals"])
 
+@router.post("/reset", response_model=None)
+def load(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+    change_user_session(user_id, db)
+    return None
+
 @router.post("/load", response_model=APIResponse)
 def load(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
     last_response = get_model_latest_response(user_id, db)
@@ -50,20 +55,21 @@ def query(request: APIRequest, user_id: int = Depends(get_current_user), db: Ses
         update_session_phase_tag(user_db_session, "refine_phases", db)
     return APIResponse(phase_tag=user_db_session.phase_tag, ret_obj=response_parsed)
     
-@router.post("/confirm", response_model=APIResponse)
+@router.post("/confirm", response_model=APIResponse) # consider clearing the chat history
 def confirm(request: ConfirmRequest, user_id = Depends(get_current_user), db: Session = Depends(get_db)):
     user_db_session = get_user_session(user_id, db)
     confirm_obj = request.confirm_obj
     if isinstance(confirm_obj, DefinitionsCreate):
         update_session_goal(user_db_session, confirm_obj, db)
         update_session_phase_tag(user_db_session, "get_prerequisites", db)
-        user_input=f'My goal is {confirm_obj.model_dump_json()}\nWhat prerequisites do you need from me?'
+        user_input=f'Based on your expertise on the subject, ask me questions about my current knowledge to help your planning for my goal.'
         query_request=APIRequest(user_input=user_input)
         return query(query_request, user_id, db)
     elif isinstance(confirm_obj, GoalPrerequisites):
         update_session_prereq(user_db_session, confirm_obj, db)
         update_session_phase_tag(user_db_session, "refine_phases", db)
-        user_input=f'My goal is {user_db_session.goal_obj}\nMy prerequisites are {confirm_obj.model_dump_json()}\nWhat should the plan look like?'
+        update_session_data(user_db_session, [], db) # clear chat history
+        user_input=f'Generate the most suitable initial plan according to my goal, deadline and limitations.'
         query_request=APIRequest(user_input=user_input)
         return query(query_request, user_id, db)
     elif isinstance(confirm_obj, PhaseGeneration): # and user_db_session.phase_tag != "refine_phases": forgot why i added this condition.
