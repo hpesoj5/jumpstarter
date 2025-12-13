@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { isExpired } from "@/api/auth";
 import { Carousel } from "@/components/layout/Carousel";
 import AuthModal from "@/components/AuthModal";
 import Navbar from "@/components/layout/Navbar";
@@ -11,8 +12,11 @@ export default function HomePage() {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        if (token) {
+        if (token && !isExpired(token)) {
             router.push("/dashboard"); // redirect signed-in users
+        }
+        else if (token) {
+            localStorage.removeItem("token");
         }
     });
   
@@ -28,7 +32,7 @@ export default function HomePage() {
                     <p className="mt-6 text-gray-600 mx-auto">
                         Planning can be tedious.<br/>
                         That shouldn’t stop you from achieving your dreams.<br/>
-                        [GoalTracker] helps you define SMART goals and creates a plan that works for you.<br/>
+                        JumpStarter helps you define SMART goals and creates a plan that works for you.<br/>
                         Track your progress. Stay motivated. Take actionable steps toward your goals!<br/>
                     </p>
 

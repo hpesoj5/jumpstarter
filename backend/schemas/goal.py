@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from typing import List, Literal, Any
 from datetime import date, time
     
@@ -100,7 +100,37 @@ class DailyRead(DailyBase):
 
     class Config:
         from_attributes = True
-
+        
+    @model_validator(mode="before")
+    def compute_phase_title(cls, data):
+        print(type(data))
+        if not isinstance(data, dict):
+            obj = data
+            data = {
+                "id": obj.id,
+                "dailies_date": obj.dailies_date,
+                "estimated_time_minutes": obj.estimated_time_minutes,
+                "is_completed": obj.is_completed,
+                "phase_id": obj.phase_id,
+                "phase_title": obj.phase.title,
+                "start_time": obj.start_time,
+                "task_description": obj.task_description,
+            }
+        
+        return data
+                
 class DailiesPost(DailiesGeneration):
     goal_phases: List[str]
     curr_phase: str
+    
+class DailyIdsList(BaseModel):
+    ids: List[int]
+
+class GoalProgress(BaseModel):
+    title: str
+    total_dailies: int
+    completed_dailies: int
+    deadline: date
+
+class GoalProgressRead(BaseModel):
+    goals: List[GoalProgress]

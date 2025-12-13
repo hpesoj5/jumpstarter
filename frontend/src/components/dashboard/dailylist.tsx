@@ -1,16 +1,22 @@
 "use client"
-import { JSX, useMemo } from "react";
+import { useMemo } from "react";
 import Box from "@mui/material/Box";
+import Button from "@mui/material/Button";
 import Card from "@mui/material/Card";
 import Checkbox from "@mui/material/Checkbox";
+import dayjs from "dayjs";
+import Divider from "@mui/material/Divider";
+import { markComplete } from "@/api/dashboard";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
 import TableCell from "@mui/material/TableCell";
+import TableFooter from "@mui/material/TableFooter";
+import TableHead from "@mui/material/TableHead";
+import TablePagination from "@mui/material/TablePagination";
+import { TablePaginationActionsProps } from "@mui/material/TablePaginationActions";
+import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { useSelection } from "@/hooks/useSelection";
-import dayjs from "dayjs"
 
 export interface Daily {
     id: number,
@@ -22,13 +28,14 @@ export interface Daily {
 };
 
 export interface DailyTableProps {
-    count?: number,
-    page?: number,
-    rows?: Daily[],
+    count: number,
+    page: number,
+    rows: Daily[],
+    rowsPerPage: number,
     // we will be displaying all tasks in a single page in a vertically scrollable table
 }
 
-export function DailyTable({ count=0, page=0, rows=[] }: DailyTableProps): JSX.Element {
+export function DailyTable({ count, page, rows, rowsPerPage }: DailyTableProps) {
     const rowIds = useMemo(() => {
         return rows.map((daily) => daily.id);
     }, [rows]);
@@ -37,11 +44,26 @@ export function DailyTable({ count=0, page=0, rows=[] }: DailyTableProps): JSX.E
 
     const selectedSome = (selected?.size ?? 0) > 0 && (selected?.size ?? 0) < rows.length;
     const selectedAll = rows.length > 0 && selected?.size === rows.length;
+    const selectedAny = selectedSome || selectedAll;
+
+    const SubmitButton = ({ disabled }: TablePaginationActionsProps) => {
+        const handleClick = async () => {
+            const selectedIds = Array.from(selected);
+            await markComplete(selectedIds);
+            window.location.reload()
+        };
+
+        return (
+            <Button variant="contained" disabled={disabled} onClick={handleClick}>
+                Mark as Completed
+            </Button>
+        );
+    };
 
     return (
         <Card>
-            <Box sx={{ height: "72vh", overflow: "auto"}}>
-                <Table sx={{ minWidth: "800px"}}>
+            <Box sx={{ overflow: "auto"}}>
+                <Table sx={{ height: "72vh", minWidth: "800px"}}>
                     <TableHead>
                         <TableRow>
                             <TableCell padding="checkbox">
@@ -89,13 +111,26 @@ export function DailyTable({ count=0, page=0, rows=[] }: DailyTableProps): JSX.E
                             );
                         })}
                     </TableBody>
+                    <TableFooter>
+                        <TableRow>
+                            <TablePagination
+                                count={count}
+                                page={page}
+                                onPageChange={() => {}}
+                                rowsPerPage={rowsPerPage}
+                                rowsPerPageOptions={[]}
+                                ActionsComponent={SubmitButton}
+                                disabled={!selectedAny}
+                            />
+                        </TableRow>
+                    </TableFooter>
                 </Table>
             </Box>
         </Card>
     );
 }
 
-export function EmptyDailies(): JSX.Element {
+export function EmptyDailies() {
     return (
         <Card>
             <Box sx={{ height: "72vh", overflow: "auto", justifyContent: "center", flexDirection: "column", display: "flex" }}>

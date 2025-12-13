@@ -1,4 +1,3 @@
-import { JSX } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Stack from "@mui/material/Stack";
@@ -11,7 +10,7 @@ export interface CardValue {
     sx?: SxProps,
 }
 
-export function StatCard({stat, value, sx}: CardValue): JSX.Element {
+export function StatCard({stat, value, sx}: CardValue) {
 
     return (
         <Card sx={sx}>

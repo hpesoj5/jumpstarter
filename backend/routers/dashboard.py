@@ -1,6 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, case
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import SQLAlchemyError
 from backend.db import get_db
 from backend import models, schemas
 from backend.utils import get_current_user
@@ -62,3 +63,72 @@ def get_stats(user_id: int = Depends(get_current_user), db: Session = Depends(ge
         "completed_goals": completed_goals,
         "tasks_today_list": tasks_today_list,
     }
+
+@router.get("/goal_progress", response_model=schemas.GoalProgressRead)
+def get_goal_progress(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Returns stats for the dashboard goal progress card
+    """
+    goals = (
+        db.query(
+            models.Goal.title,
+            models.Goal.deadline,
+            func.count(models.Daily.id).label("total_dailies"),
+            func.sum(case((models.Daily.is_completed == True, 1), else_=0)).label("completed_dailies")
+        )
+        .join(models.Daily.phase)
+        .join(models.Phase.goal)
+        .filter(
+            models.Goal.owner_id == user_id,
+            models.Goal.is_completed == False,
+        )
+        .group_by(models.Goal.id)
+        .all()
+    )
+    for goal in goals:
+        if goal.completed_dailies == None:
+            goal.completed_dailies = 0
+    
+    return { "goals": goals }
+
+@router.patch("/mark_complete")
+def mark_complete(selected_ids = schemas.DailyIdsList, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    Marks selected dailies as complete
+    """
+    try:
+        dailies = (
+            db.query(models.Daily)
+            .join(models.Daily.phase)
+            .join(models.Phase.goal)
+            .filter(
+                models.Daily.id.in_(selected_ids.ids),
+                models.Goal.owner_id == user_id,
+                models.Goal.is_completed == False,
+            )
+            .all()
+        )
+        
+        if not dailies:
+            return {
+                "message": "No dailies found",
+                "updated": 0,
+            }
+        
+        for daily in dailies:
+            daily.is_completed = True
+            
+        db.commit()
+        
+        return {
+            "message": "Dailies markead as completed",
+            "updated": len(dailies),
+        }
+    
+    except SQLAlchemyError as e:
+        db.rollback()
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while updating the database."
+        )

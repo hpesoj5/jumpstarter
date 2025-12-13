@@ -2,12 +2,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Grid from "@mui/material/Grid";
-import { getStats } from "@/api/dashboard";
-import type { TokenPayload } from "@/api/config";
-import { StatCard } from "@/components/dashboard/card";
-import { Daily, DailyTable, EmptyDailies } from "@/components/dashboard/dailylist";
-import { ProgressCard } from "@/components/dashboard/goalprogress";
-import { jwtDecode } from "jwt-decode";
+import { getStats, getGoalProgress } from "@/api/dashboard";
+import { isExpired } from "@/api/auth";
+import { StatCard } from "@/components/dashboard/StatCard";
+import { Daily, DailyTable, EmptyDailies } from "@/components/dashboard/DailyList";
+import { ProgressCard } from "@/components/dashboard/GoalProgressCard";
 
 interface Stats {
     remaining_tasks_today: number,
@@ -17,27 +16,23 @@ interface Stats {
     tasks_today_list: Daily[],
 }
 
+export interface Goal {
+    title: string,
+    total_dailies: number,
+    completed_dailies: number,
+    deadline: string,
+};    
+
 export default function Dashboard() {
     const router = useRouter();
     const [stats, setStats] = useState<Stats>({
         remaining_tasks_today: 0,
-    completed_tasks_today: 0,
-    ongoing_goals: 0,
-    completed_goals: 0,
-    tasks_today_list: [],
+        completed_tasks_today: 0,
+        ongoing_goals: 0,
+        completed_goals: 0,
+        tasks_today_list: [],
     });
-
-    const isExpired = (token: string | null) => {
-        if (!token) return true;
-        try {
-            const decodedToken = jwtDecode<TokenPayload>(token);
-            const currentTime = Date.now() / 1000; // current time in seconds
-            return decodedToken.exp! < currentTime;
-        } catch (err) {
-            console.error("Error decoding token:", err);
-            return true;
-        }
-    };
+    const [goals, setGoals] = useState<Goal[]>([]);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -51,6 +46,8 @@ export default function Dashboard() {
         const loadStats = async () => {
             const data = await getStats();
             setStats(data);
+            const goalData = await getGoalProgress();
+            setGoals(goalData.goals);
         };
         loadStats();
     }, []);
@@ -74,9 +71,10 @@ export default function Dashboard() {
             <Grid size={{ lg: 8, sm: 12 }}>
                 {stats?.remaining_tasks_today > 0 ? (
                     <DailyTable
-                        count={stats?.remaining_tasks_today}
-                        page={1}
+                        count={stats?.tasks_today_list.length}
+                        page={0}
                         rows={stats?.tasks_today_list}
+                        rowsPerPage={stats?.tasks_today_list.length}
                     />
                 ) : (
                     <EmptyDailies/>
@@ -84,13 +82,8 @@ export default function Dashboard() {
             </Grid>
             <Grid size={{ lg: 4, sm: 12 }}>
                 <ProgressCard
-                    goal={{
-                        title: "Test Goal",
-                        total_dailies: 5,
-                        completed_dailies: 2,
-                        deadline: new Date("2025-12-25T10:30:00Z"),
-                    }}
-                    current_date={new Date("2025-12-01T10:30:00Z")}
+                    goals={goals}
+                    current_date={new Date()}
                 />
             </Grid>
         </Grid>

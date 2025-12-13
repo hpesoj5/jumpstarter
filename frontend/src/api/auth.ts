@@ -1,5 +1,6 @@
 import { jwtDecode } from "jwt-decode";
-import { API_URL, type TokenPayload } from "@/api/config";
+import { API_URL } from "@/api/config";
+import type { TokenPayload } from "@/api/config";
 
 export async function signup(username: string, email: string, password: string) {
     const res = await fetch(`${API_URL}/auth/signup`, {
@@ -27,16 +28,14 @@ export async function login(email: string, password: string) {
     return res.json(); // contains token
 }
 
-// export const getUserId = (): number => {
-//     try {
-//         const token =
-//             typeof window !== "undefined"
-//                 ? localStorage.getItem("token")
-//                 : null;
-//         if (!token) return -1;
-//         const decoded = jwtDecode<TokenPayload>(token);
-//         return decoded.uid ?? -1;
-//     } catch {
-//         return -1;
-//     }
-// };
+export const isExpired = (token: string | null) => {
+    if (!token) return true;
+    try {
+        const decodedToken = jwtDecode<TokenPayload>(token);
+        const currentTime = Date.now() / 1000; // current time in seconds
+        return decodedToken.exp! < currentTime;
+    } catch (err) {
+        console.error("Error decoding token:", err);
+        return true;
+    }
+};
