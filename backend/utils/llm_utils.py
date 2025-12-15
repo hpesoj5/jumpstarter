@@ -1,11 +1,8 @@
 import datetime, pickle, json, re
 from datetime import date
 
-from fastapi import Depends
 from pydantic import TypeAdapter
 from sqlalchemy.orm import Session
-
-from backend.db import get_db
 
 from backend.models import ChatSession
 from backend.schemas import (FollowUp,
@@ -15,6 +12,9 @@ from backend.schemas import (FollowUp,
                             DailiesGeneration, DailiesPost,)
 #from backend.utils.system_instruction import SYSTEM_INSTRUCTION, DAILIES_GENERATION_PROMPT
 from backend.utils.instruction_chain import BASE_INSTRUCTION, PHASE_INSTRUCTIONS, SEARCH_INSTRUCTION, DAILIES_GENERATION_INSTRUCTION
+
+from openai import OpenAI
+from openai.types.chat import ChatCompletionToolParam
 
 from google import genai
 from google.genai.types import Content, Part, Tool, GoogleSearch
@@ -26,14 +26,23 @@ from dotenv import load_dotenv
 backend_dir = Path(__file__).resolve().parent.parent
 load_dotenv(backend_dir / ".env")
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+OPEN_API_KEY = os.getenv("OPEN_API_KEY")
 
-def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(get_db)):
-    client = genai.Client(api_key=GOOGLE_API_KEY)
+GEMINI_MODEL = os.getenv("GEMINI_MODEL")
+OPEN_MODEL = os.getenv("OPEN_MODEL")
+
+openrouter_client = OpenAI(
+    api_key=OPEN_API_KEY, 
+    base_url="https://openrouter.ai/api/v1",
+)
+gemini_client = genai.Client(api_key=GOOGLE_API_KEY)
+
+def get_llm_response(session: ChatSession, user_input: str, db):
     
     current_phase = session.phase_tag
     
     if current_phase == "define_goal":
-        response_schema = FollowUp | DefinitionsCreate
+        response_schema = FollowUp | GoalPrerequisites
         prompt_template = PHASE_INSTRUCTIONS["define_goal"]
         format_args = {
             "followUp": FollowUp.model_json_schema(),
@@ -67,29 +76,21 @@ def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(
                               prompt_template.format(**format_args)
 
     chat_history = pickle.loads(session.session_data)
-    new_user_message = Content(
-        parts=[Part.from_text(text=user_input)],
-        role='user'
-    )
-    chat_history.append(new_user_message)
+    chat_history.append({"role": "user", "content": user_input})
 
-    return client.models.generate_content(
-        model='gemini-2.5-flash-lite',
-        contents=chat_history,
-        config={
-            "system_instruction": full_system_instruction,
-            "response_mime_type": "application/json",
-            "response_schema": response_schema,
-        },
+    response = openrouter_client.responses.parse(
+        model=OPEN_MODEL,
+        input=[
+            {"role": "system", "content": full_system_instruction},
+            *chat_history,
+        ],
+        text_format=response_schema,
     )
-
-# backend/utils/llm_utils.py
+    return response
 
 def fetch_phase_resources(session: ChatSession, phase: PhaseCreate):
-    client = genai.Client(api_key=GOOGLE_API_KEY)
-
-    response = client.models.generate_content(
-        model='gemini-2.5-flash-lite',
+    response = gemini_client.models.generate_content(
+        model=GEMINI_MODEL,
         contents=SEARCH_INSTRUCTION.format(
             goal_json=session.goal_obj,
             prereq_json=session.prereq_obj,
@@ -119,7 +120,7 @@ def fetch_phase_resources(session: ChatSession, phase: PhaseCreate):
     except Exception as e:
         return {}, {}
     
-def generate_dailies(session: ChatSession, phase: PhaseCreate, db: Session=Depends(get_db)):
+def generate_dailies(session: ChatSession, phase: PhaseCreate, db):
 
     all_phases_dailies = []
     if session.dailies_obj:
@@ -137,27 +138,30 @@ def generate_dailies(session: ChatSession, phase: PhaseCreate, db: Session=Depen
                                         The currently confirmed tasks for this goal (for context and continuity) is: {all_phases_dailies}.
                                         Generate the daily schedule for the next 2 weeks starting from, and including {current_planning_date}
                                         """
-        
-        client = genai.Client(api_key=GOOGLE_API_KEY)
-        response = client.models.generate_content(
-            model='gemini-2.5-flash-lite',
-            contents = [{
-                "role": "user", 
-                "parts": [{"text": f"{dailies_generation_prompt}"}]
-            }],
-            config={
-                "system_instruction": DAILIES_GENERATION_INSTRUCTION.format(
-                    dailiesGeneration=DailiesGeneration.model_json_schema(),
-                    phase_resources = resource,
-                    goal_obj = session.goal_obj,
-                    prereq_obj = session.prereq_obj,
-                    phases_obj = session.phases_obj,
-                    phase_title = phase.title,
-                ),
-                "response_mime_type": "application/json",
-                "response_schema": DailiesGeneration,
-            },
+
+        response = openrouter_client.responses.parse(
+            model=OPEN_MODEL,
+            input=[
+                {
+                    "role": "system",
+                    "content": DAILIES_GENERATION_INSTRUCTION.format(
+                        dailiesGeneration=DailiesGeneration.model_json_schema(),
+                        phase_resources=resource,
+                        goal_obj=session.goal_obj,
+                        prereq_obj=session.prereq_obj,
+                        phases_obj=session.phases_obj,
+                        phase_title=phase.title,
+                    ),
+                },
+                {
+                    "role": "user",
+                    "content": f"{dailies_generation_prompt}",
+                },
+                
+            ],
+            text_format=DailiesGeneration,
         )
+        
         response = parse_response(response)
         new_tasks = response.dailies
 
@@ -188,7 +192,7 @@ def generate_dailies(session: ChatSession, phase: PhaseCreate, db: Session=Depen
 
 def parse_response(response): # can do more parsing but thats kinda a lot of work i.e. check for missing fields
     models = TypeAdapter(FollowUp | DefinitionsCreate | GoalPrerequisites | PhaseGeneration | DailiesGeneration)
-    text = response.candidates[0].content.parts[0].text
+    text = response.output[1].content[0].text
     # code fence removal
     if text.startswith("```"): 
         if text.startswith("```json\n"):

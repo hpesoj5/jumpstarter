@@ -89,7 +89,7 @@ def get_model_latest_response(uid, db: Session=Depends(get_db)): # returns last 
     chat_history = pickle.loads(session.session_data)
     if len(chat_history) == 0:
         return None
-    text_obj = json.loads(chat_history[-1].parts[0].text)
+    text_obj = json.loads(chat_history[-1])
     return models.validate_python(text_obj)
 
 def update_session_phase_tag(session: ChatSession, phase_tag, db: Session=Depends(get_db)):
@@ -120,12 +120,19 @@ def update_session_data(session: ChatSession, session_data, db: Session=Depends(
     
 def update_session_chat_history(session: ChatSession, user_input, response, db: Session=Depends(get_db)):
     chat_history = pickle.loads(session.session_data)
-    new_user_message = Content(
-        parts=[Part.from_text(text=f'CURRENT_PHASE = "{session.phase_tag}"\n{user_input}')],
-        role='user'
-    )
+
+    new_user_message = {
+        'role': 'user',
+        'content': f'CURRENT_PHASE = "{session.phase_tag}"\n{user_input}',
+    }
+
     chat_history.append(new_user_message)
-    chat_history.append(response.candidates[0].content)
+    new_reponse = {
+        'role': 'assistant',
+        'content': response,
+    }
+    chat_history.append(new_reponse['content'].output[1].content[0].text)
+    
     update_session_data(session, chat_history, db)
 
 def update_session_goal(session: ChatSession, goal, db: Session=Depends(get_db)): # after user completes goal_def phase, dump the DefinitionsCreate object into the session
