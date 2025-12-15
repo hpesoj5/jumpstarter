@@ -47,11 +47,6 @@ def query(request: APIRequest, user_id: int = Depends(get_current_user), db: Ses
     update_session_chat_history(user_db_session, user_input, response_raw, db)
     db.commit()
 
-    if isinstance(response_parsed, FollowUp): # auto transition
-        
-        confirm_request = ConfirmRequest(user_id=user_id, confirm_obj=response_parsed)
-        return confirm(confirm_request, user_id, db)
-    
     if isinstance(response_parsed, GoalPrerequisites): # auto transition
         confirm_request = ConfirmRequest(user_id=user_id, confirm_obj=response_parsed)
         return confirm(confirm_request, user_id, db)

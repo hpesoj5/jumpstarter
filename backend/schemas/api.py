@@ -4,7 +4,7 @@ from backend.schemas.goal import DefinitionsCreate, GoalPrerequisites, PhaseGene
 
 # possibly add response models here
 class FollowUp(BaseModel):
-    status: Literal['follow_up_required', 'all_info_completed'] = 'follow_up_required'
+    status: Literal['follow_up_required'] = 'follow_up_required'
     question_to_user: str = Field(description="A single, specific, question to the user.")
 
 class GoalCompleted(BaseModel):
