@@ -199,19 +199,12 @@ def insert_goal(goal_data, prereq_data, user_id, db: Session=Depends(get_db)): #
             deadline=goal_data["deadline"],
             owner_id=user_id,
 
-            skill_level=prereq_data["skill_level"],
             related_experience=prereq_data["related_experience"],
-            resources_available=prereq_data["resources_available"],
-            user_gap_assessment=prereq_data["user_gap_assessment"],
             possible_gap_assessment=prereq_data["possible_gap_assessment"],
-            
             time_commitment_per_week_hours=prereq_data["time_commitment_per_week_hours"],
             budget=prereq_data["budget"],
-            required_equipment=prereq_data["required_equipment"],
-            support_system=prereq_data["support_system"],
-
+            required_resources=prereq_data["required_resources"],
             blocked_time_blocks=prereq_data["blocked_time_blocks"],
-            available_time_blocks=prereq_data["available_time_blocks"],
         )
 
         db.add(db_goal)

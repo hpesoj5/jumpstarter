@@ -16,19 +16,12 @@ class Goal(Base):
     owner = relationship("User", back_populates="goals")
 
     # Prerequisites, need to be unwrapped to pass in
-    skill_level = Column(Text)
     related_experience = Column(ARRAY(Text))
-    resources_available = Column(ARRAY(Text))
-    user_gap_assessment = Column(ARRAY(Text))
     possible_gap_assessment = Column(ARRAY(Text))
-
     time_commitment_per_week_hours = Column(Float)
     budget = Column(Float)
-    required_equipment = Column(ARRAY(String))
-    support_system = Column(ARRAY(String))
-
+    required_resources = Column(ARRAY(String))
     blocked_time_blocks = Column(ARRAY(String))
-    available_time_blocks = Column(ARRAY(String))
 
     phases = relationship("Phase", back_populates="goal", cascade="all, delete-orphan")
     

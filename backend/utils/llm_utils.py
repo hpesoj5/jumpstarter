@@ -10,7 +10,7 @@ from backend.db import get_db
 from backend.models import ChatSession
 from backend.schemas import (FollowUp,
                             DefinitionsCreate, 
-                            CurrentState, FixedResources, Constraints, GoalPrerequisites, 
+                            GoalPrerequisites, 
                             PhaseGeneration, PhaseCreate,
                             DailiesGeneration, DailiesPost,)
 #from backend.utils.system_instruction import SYSTEM_INSTRUCTION, DAILIES_GENERATION_PROMPT
@@ -25,14 +25,20 @@ from dotenv import load_dotenv
 
 backend_dir = Path(__file__).resolve().parent.parent
 load_dotenv(backend_dir / ".env")
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
+
+DEFINITIONS_API_KEY=os.getenv("DEFINITIONS_API_KEY")
+PREREQ_API_KEY=os.getenv("PREREQ_API_KEY")
+PHASES_API_KEY=os.getenv("PHASES_API_KEY")
+GROUNDING_API_KEY=os.getenv("GROUNDING_API_KEY")
+DAILIES_API_KEY=os.getenv("DAILIES_API_KEY")
 
 def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(get_db)):
-    client = genai.Client(api_key=GOOGLE_API_KEY)
     
     current_phase = session.phase_tag
     
-    if current_phase == "define_goal":
+    if current_phase == "define_goal":    
+        client = genai.Client(api_key=DEFINITIONS_API_KEY)
+
         response_schema = FollowUp | DefinitionsCreate
         prompt_template = PHASE_INSTRUCTIONS["define_goal"]
         format_args = {
@@ -41,6 +47,8 @@ def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(
         }
 
     elif current_phase == "get_prerequisites":
+        client = genai.Client(api_key=PREREQ_API_KEY)
+
         response_schema = FollowUp | GoalPrerequisites
         prompt_template = PHASE_INSTRUCTIONS["get_prerequisites"]
         format_args = {
@@ -50,6 +58,8 @@ def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(
         }
 
     elif current_phase in ["generate_phases", "refine_phases"]:
+        client = genai.Client(api_key=PHASES_API_KEY)
+
         response_schema = PhaseGeneration
         prompt_template = PHASE_INSTRUCTIONS[current_phase]
         format_args = {
@@ -86,7 +96,7 @@ def get_llm_response(session: ChatSession, user_input: str, db: Session=Depends(
 # backend/utils/llm_utils.py
 
 def fetch_phase_resources(session: ChatSession, phase: PhaseCreate):
-    client = genai.Client(api_key=GOOGLE_API_KEY)
+    client = genai.Client(api_key=GROUNDING_API_KEY)
 
     response = client.models.generate_content(
         model='gemini-2.5-flash-lite',
@@ -138,7 +148,7 @@ def generate_dailies(session: ChatSession, phase: PhaseCreate, db: Session=Depen
                                         Generate the daily schedule for the next 2 weeks starting from, and including {current_planning_date}
                                         """
         
-        client = genai.Client(api_key=GOOGLE_API_KEY)
+        client = genai.Client(api_key=DAILIES_API_KEY)
         response = client.models.generate_content(
             model='gemini-2.5-flash-lite',
             contents = [{

@@ -13,29 +13,15 @@ class DefinitionsCreate(DefinitionsBase):
     status: Literal['definitions_extracted'] = 'definitions_extracted'
     # are you doing something with this, judging from your other create schemas. just an identifier in case it is needed
 
-class CurrentState(BaseModel):
-    """Details about the user's starting point and gaps."""
-    skill_level: str = Field(description="The user's current skill level related to the goal.")
-    related_experience: List[str] = Field(description="Relevant past experience or projects.", default=[])
-    resources_available: List[str] = Field(description="Current readily available resources (tools, software, people).", default=[])
-    user_gap_assessment: List[str] = Field(description="A list of problems or missing skills the user has identified.", default=[])
-    possible_gap_assessment: List[str] = Field(description="A list of problems or missing skills identified by the LLM (optional, for planning assistance).", default=[])
-
-class FixedResources(BaseModel):
-    """Non-negotiable resource constraints."""
-    time_commitment_per_week_hours: float = Field(description="The number of hours the user can reliably commit per week.")
-    budget: float = Field(description="The monetary budget available for the goal (in the user's local currency, e.g., 'USD').", default=0.0)
-    required_equipment: List[str] = Field(description="Specific equipment or materials needed to start or complete the goal.", default=[])
-    support_system: List[str] = Field(description="People or groups available for emotional or practical support.", default=[])
-
-class Constraints(BaseModel):
-    """Scheduling and external limitations."""
-    available_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Tuesday 7pm-9pm') when the user is free to work on the goal.", default=[])
-    blocked_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Mondays 9am-5pm') when the user is absolutely unavailable.", default=[])
-
-class GoalPrerequisites(CurrentState, FixedResources, Constraints):
+class GoalPrerequisites(BaseModel):
     """The complete structure for all prerequisites."""
     status: Literal['prerequisites_extracted'] = 'prerequisites_extracted'
+    related_experience: List[str] = Field(description="Relevant past experience or projects.", default=[])
+    time_commitment_per_week_hours: float = Field(description="The number of hours the user can reliably commit per week.")
+    blocked_time_blocks: List[str] = Field(description="Specific recurring time blocks (e.g., 'Mondays 9am-5pm') when the user is absolutely unavailable.", default=[])
+    budget: float = Field(description="The monetary budget available for the goal (in the user's local currency, e.g., 'USD').", default=0.0)
+    required_resources: List[str] = Field(description="Specific equipment or materials needed to start or complete the goal.", default=[])
+    possible_gap_assessment: List[str] = Field(description="A list of problems or missing skills identified by the LLM (optional, for planning assistance).", default=[])
 
 class Definitions(DefinitionsBase):
     id: int
