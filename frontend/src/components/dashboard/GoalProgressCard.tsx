@@ -82,76 +82,78 @@ export function ProgressCard({ goals, current_date }: ProgressCardProps) {
     }
 
     return (
-        <Card>
-            <Stack
-                direction="row" 
-                sx={{
-                    display: "flex",
-                    flexDirection: "row",
-                    alignItems: "center", 
-                    justifyContent: "space-between",
-                    px: 2,
-                    py: 4,
-                }}
-            >
-                <IconButton aria-label="previous" onClick={() => {changePage(-1)}}>
-                    <CaretLeftIcon />
-                </IconButton>
-                <Stack 
-                    direction="column"
+        <>
+            {numGoals > 0 && <Card>
+                <Stack
+                    direction="row" 
                     sx={{
                         display: "flex",
-                        flexDirection: "column",
-                        flexGrow: 1,
-                        height: "100%",
-                        alignItems: "center",
+                        flexDirection: "row",
+                        alignItems: "center", 
+                        justifyContent: "space-between",
+                        px: 2,
+                        py: 4,
                     }}
-                    spacing="5%"
                 >
-                    <Box
-                        sx={{
-                            position: "relative",
-                            width: chartWidth,
-                            height: chartHeight,
-                        }}
-                    >
-                        <PieChart
-                            series={[
-                                {
-                                    data: [
-                                        { id: 0, value: 1},
-                                    ],
-                                    innerRadius: innerRadius,
-                                    cornerRadius: cornerRadius,
-                                    startAngle: 0,
-                                    endAngle: 360 * proportion,
-                                }                    
-                            ]}
-                            height={chartHeight}
-                            width={chartWidth}
-                            slotProps={{ tooltip: { trigger: "none" } }}
-                        >
-                        </PieChart>
-                        <DonutCenterLabel>
-                            <Typography variant="h5">{100 * proportion}%</Typography>
-                            </DonutCenterLabel>
-                    </Box>
-                    <Box
+                    {numGoals > 1 && <IconButton aria-label="previous" onClick={() => {changePage(-1)}}>
+                        <CaretLeftIcon />
+                    </IconButton>}
+                    <Stack 
+                        direction="column"
                         sx={{
                             display: "flex",
                             flexDirection: "column",
+                            flexGrow: 1,
+                            height: "100%",
                             alignItems: "center",
                         }}
+                        spacing="5%"
                     >
-                        <Typography variant="h6">{title}</Typography>
-                        <Typography color="text.secondary" variant="body1">{daysRemaining} days remaining</Typography>
-                        <Typography color="text.secondary" variant="body1">{dailiesRemaining} remaining tasks</Typography>
-                    </Box>
+                        <Box
+                            sx={{
+                                position: "relative",
+                                width: chartWidth,
+                                height: chartHeight,
+                            }}
+                        >
+                            <PieChart
+                                series={[
+                                    {
+                                        data: [
+                                            { id: 0, value: 1},
+                                        ],
+                                        innerRadius: innerRadius,
+                                        cornerRadius: cornerRadius,
+                                        startAngle: 0,
+                                        endAngle: 360 * proportion,
+                                    }                    
+                                ]}
+                                height={chartHeight}
+                                width={chartWidth}
+                                slotProps={{ tooltip: { trigger: "none" } }}
+                            >
+                            </PieChart>
+                            <DonutCenterLabel>
+                                <Typography variant="h5">{Math.floor(100 * proportion)}%</Typography>
+                                </DonutCenterLabel>
+                        </Box>
+                        <Box
+                            sx={{
+                                display: "flex",
+                                flexDirection: "column",
+                                alignItems: "center",
+                            }}
+                        >
+                            <Typography variant="h6">{title}</Typography>
+                            <Typography color="text.secondary" variant="body1">{daysRemaining} days remaining</Typography>
+                            <Typography color="text.secondary" variant="body1">{dailiesRemaining} remaining tasks</Typography>
+                        </Box>
+                    </Stack>
+                    {numGoals > 1 && <IconButton aria-label="next" onClick={() => {changePage(1)}}>
+                        <CaretRightIcon />
+                    </IconButton>}
                 </Stack>
-                <IconButton aria-label="next" onClick={() => {changePage(1)}}>
-                    <CaretRightIcon />
-                </IconButton>
-            </Stack>
-        </Card>
+            </Card>}
+        </>
     );
 }

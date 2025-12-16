@@ -53,7 +53,8 @@ class Daily(Base):
     dailies_date = Column(Date, nullable=False)
     start_time = Column(Time, nullable=False)
     estimated_time_minutes = Column(Integer, nullable=False)
-    is_completed = Column(Boolean, default=False)
+    is_completed = Column(Boolean, nullable=False, default=False)
+    completed_date = Column(Date, nullable=True)
     
     phase_id = Column(Integer, ForeignKey("phases.id"), nullable=False, index=True) 
     phase = relationship("Phase", back_populates="dailies")

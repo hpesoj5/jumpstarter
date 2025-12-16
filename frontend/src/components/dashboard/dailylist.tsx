@@ -1,14 +1,16 @@
 "use client"
 import { useMemo } from "react";
-import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import Checkbox from "@mui/material/Checkbox";
+import { DailyTableProps } from "@/api/config";
 import dayjs from "dayjs";
 import Divider from "@mui/material/Divider";
 import { markComplete } from "@/api/dashboard";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
+import TableContainer from "@mui/material/TableContainer";
 import TableCell from "@mui/material/TableCell";
 import TableFooter from "@mui/material/TableFooter";
 import TableHead from "@mui/material/TableHead";
@@ -18,21 +20,11 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { useSelection } from "@/hooks/useSelection";
 
-export interface Daily {
-    id: number,
-    task_description: string,
-    phase_title: string,
-    start_time: string,
-    estimated_time_minutes: number,
-    is_completed: boolean,
-};
-
-export interface DailyTableProps {
-    count: number,
-    page: number,
-    rows: Daily[],
-    rowsPerPage: number,
-    // we will be displaying all tasks in a single page in a vertically scrollable table
+const displayNothing = ({ from, to, count}) => {
+    return (
+        <>
+        </>
+    );
 }
 
 export function DailyTable({ count, page, rows, rowsPerPage }: DailyTableProps) {
@@ -49,12 +41,12 @@ export function DailyTable({ count, page, rows, rowsPerPage }: DailyTableProps) 
     const SubmitButton = ({ disabled }: TablePaginationActionsProps) => {
         const handleClick = async () => {
             const selectedIds = Array.from(selected);
-            await markComplete(selectedIds);
+            await markComplete(selectedIds, true);
             window.location.reload()
         };
 
         return (
-            <Button variant="contained" disabled={disabled} onClick={handleClick}>
+            <Button variant="contained" disabled={disabled} sx={{ margin: 1 }} onClick={handleClick}>
                 Mark as Completed
             </Button>
         );
@@ -62,10 +54,15 @@ export function DailyTable({ count, page, rows, rowsPerPage }: DailyTableProps) 
 
     return (
         <Card>
-            <Box sx={{ overflow: "auto"}}>
-                <Table sx={{ height: "72vh", minWidth: "800px"}}>
+            <TableContainer sx={{ height: "70vh", overflow: "auto" }}>
+                <Table stickyHeader>
                     <TableHead>
                         <TableRow>
+                            <TableCell>Task</TableCell>
+                            <TableCell>Phase</TableCell>
+                            <TableCell>Date</TableCell>
+                            <TableCell>Start Time</TableCell>
+                            <TableCell>Duration</TableCell>
                             <TableCell padding="checkbox">
                                 <Checkbox
                                     checked={selectedAll}
@@ -79,10 +76,6 @@ export function DailyTable({ count, page, rows, rowsPerPage }: DailyTableProps) 
                                     }}
                                 />
                             </TableCell>
-                            <TableCell>Task</TableCell>                 {/* task description */}
-                            <TableCell>Phase</TableCell>                {/* phase title */}
-                            <TableCell>Start Time</TableCell>
-                            <TableCell>Duration</TableCell>
                         </TableRow>             
                     </TableHead>
                     <TableBody>
@@ -91,6 +84,11 @@ export function DailyTable({ count, page, rows, rowsPerPage }: DailyTableProps) 
 
                             return (
                                 <TableRow hover key={row.id} selected={isSelected}>
+                                    <TableCell>{row.task_description}</TableCell>
+                                    <TableCell>{row.phase_title}</TableCell>
+                                    <TableCell>{dayjs(new Date(row.dailies_date)).format("D MMM YY")}</TableCell>
+                                    <TableCell>{dayjs(new Date(`2000-01-01T${row.start_time}`)).format("h.mm A")}</TableCell>
+                                    <TableCell>{row.estimated_time_minutes}</TableCell>
                                     <TableCell padding="checkbox">
                                         <Checkbox
                                             checked={isSelected}
@@ -103,29 +101,24 @@ export function DailyTable({ count, page, rows, rowsPerPage }: DailyTableProps) 
                                             }}
                                         />
                                     </TableCell>
-                                    <TableCell>{row.task_description}</TableCell>
-                                    <TableCell>{row.phase_title}</TableCell>
-                                    <TableCell>{dayjs(new Date(`2000-01-01T${row.start_time}`)).format("h.mm A")}</TableCell>
-                                    <TableCell>{row.estimated_time_minutes}</TableCell>
                                 </TableRow>
                             );
                         })}
                     </TableBody>
-                    <TableFooter>
-                        <TableRow>
-                            <TablePagination
-                                count={count}
-                                page={page}
-                                onPageChange={() => {}}
-                                rowsPerPage={rowsPerPage}
-                                rowsPerPageOptions={[]}
-                                ActionsComponent={SubmitButton}
-                                disabled={!selectedAny}
-                            />
-                        </TableRow>
-                    </TableFooter>
                 </Table>
-            </Box>
+            </TableContainer>
+            <TablePagination
+                component="div"
+                count={count}
+                page={page}
+                onPageChange={() => {}}
+                rowsPerPage={rowsPerPage}
+                labelRowsPerPage={false}
+                labelDisplayedRows={displayNothing}
+                rowsPerPageOptions={[]}
+                ActionsComponent={SubmitButton}
+                disabled={!selectedAny}
+            />
         </Card>
     );
 }

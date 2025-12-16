@@ -6,7 +6,7 @@ import Typography from "@mui/material/Typography";
 
 export interface CardValue {
     stat: "Remaining Tasks Today" | "Completed Tasks Today" | "Ongoing Goals" | "Completed Goals",
-    value: number,
+    value: number | null,
     sx?: SxProps,
 }
 

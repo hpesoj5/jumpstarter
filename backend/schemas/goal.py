@@ -103,7 +103,6 @@ class DailyRead(DailyBase):
         
     @model_validator(mode="before")
     def compute_phase_title(cls, data):
-        print(type(data))
         if not isinstance(data, dict):
             obj = data
             data = {
@@ -122,9 +121,17 @@ class DailyRead(DailyBase):
 class DailiesPost(DailiesGeneration):
     goal_phases: List[str]
     curr_phase: str
+
+class DailiesRequest(BaseModel):
+    goal_id: int
+    completed: bool
     
-class DailyIdsList(BaseModel):
+class DailiesResponse(BaseModel):
+    dailies: List[DailyRead]
+
+class UpdateRequest(BaseModel):
     ids: List[int]
+    completed: bool
 
 class GoalProgress(BaseModel):
     title: str
@@ -134,3 +141,6 @@ class GoalProgress(BaseModel):
 
 class GoalProgressRead(BaseModel):
     goals: List[GoalProgress]
+
+class TitleRequest(BaseModel):
+    goal_id: int

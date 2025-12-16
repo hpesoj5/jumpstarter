@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { isExpired } from "@/api/auth";
 import { Carousel } from "@/components/layout/Carousel";
 import AuthModal from "@/components/AuthModal";
@@ -13,10 +13,12 @@ export default function HomePage() {
     useEffect(() => {
         const token = localStorage.getItem("token");
         if (token && !isExpired(token)) {
-            router.push("/dashboard"); // redirect signed-in users
+            redirect("/dashboard"); // redirect signed-in users
         }
         else if (token) {
             localStorage.removeItem("token");
+            router.refresh();
+            window.location.reload();
         }
     });
   

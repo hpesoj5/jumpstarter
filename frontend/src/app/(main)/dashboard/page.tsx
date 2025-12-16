@@ -1,18 +1,19 @@
 "use client"
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 import Grid from "@mui/material/Grid";
 import { getStats, getGoalProgress } from "@/api/dashboard";
 import { isExpired } from "@/api/auth";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { Daily, DailyTable, EmptyDailies } from "@/components/dashboard/DailyList";
+import { Daily } from "@/api/config";
+import { DailyTable, EmptyDailies } from "@/components/dashboard/DailyList";
 import { ProgressCard } from "@/components/dashboard/GoalProgressCard";
 
 interface Stats {
-    remaining_tasks_today: number,
-    completed_tasks_today: number,
-    ongoing_goals: number,
-    completed_goals: number,
+    remaining_tasks_today: number | null,
+    completed_tasks_today: number | null,
+    ongoing_goals: number | null,
+    completed_goals: number | null,
     tasks_today_list: Daily[],
 }
 
@@ -24,12 +25,12 @@ export interface Goal {
 };    
 
 export default function Dashboard() {
-    const router = useRouter();
+    // const router = useRouter();
     const [stats, setStats] = useState<Stats>({
-        remaining_tasks_today: 0,
-        completed_tasks_today: 0,
-        ongoing_goals: 0,
-        completed_goals: 0,
+        remaining_tasks_today: null,
+        completed_tasks_today: null,
+        ongoing_goals: null,
+        completed_goals: null,
         tasks_today_list: [],
     });
     const [goals, setGoals] = useState<Goal[]>([]);
@@ -38,7 +39,7 @@ export default function Dashboard() {
         const token = localStorage.getItem("token");
         if (isExpired(token)) {
             localStorage.removeItem("token");
-            router.push("/");
+            redirect("/");
         }
     });
 
@@ -51,8 +52,6 @@ export default function Dashboard() {
         };
         loadStats();
     }, []);
-
-    console.log(stats);
 
     return (
         <Grid container spacing={3}>
@@ -69,12 +68,13 @@ export default function Dashboard() {
                 <StatCard stat="Completed Goals" value={stats?.completed_goals} sx={{ height: '100%' }} />
             </Grid>
             <Grid size={{ lg: 8, sm: 12 }}>
-                {stats?.remaining_tasks_today > 0 ? (
+                {(stats.remaining_tasks_today ?? 0) > 0 ? (
                     <DailyTable
-                        count={stats?.tasks_today_list.length}
+                        count={stats.tasks_today_list.length}
                         page={0}
-                        rows={stats?.tasks_today_list}
-                        rowsPerPage={stats?.tasks_today_list.length}
+                        rows={stats.tasks_today_list}
+                        rowsPerPage={stats.tasks_today_list.length}
+                        completed={true}
                     />
                 ) : (
                     <EmptyDailies/>
