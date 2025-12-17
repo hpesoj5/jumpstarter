@@ -55,7 +55,7 @@ def get_stats(user_id: int = Depends(get_current_user), db: Session = Depends(ge
         .first()
     )
     remaining_tasks_today = len(tasks_list)
-    completed_tasks_today = completed_tasks_today[0] if completed_tasks_today != None else 0
+    completed_tasks_today = completed_tasks_today[0] if completed_tasks_today != None and completed_tasks_today[0] != None else 0
     return {
         "remaining_tasks_today": remaining_tasks_today,
         "completed_tasks_today": completed_tasks_today,
@@ -64,8 +64,8 @@ def get_stats(user_id: int = Depends(get_current_user), db: Session = Depends(ge
         "tasks_today_list": tasks_list,
     }
 
-@router.get("/goal_progress", response_model=schemas.GoalProgressRead)
-def get_goal_progress(user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+@router.post("/goal_progress", response_model=schemas.GoalProgressRead)
+def get_goal_progress(request: schemas.TitleRequest, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
     """
     Returns stats for the dashboard goal progress card
     """
@@ -80,18 +80,20 @@ def get_goal_progress(user_id: int = Depends(get_current_user), db: Session = De
         .join(models.Phase.goal)
         .filter(
             models.Goal.owner_id == user_id,
-            models.Goal.is_completed == False,
         )
-        .group_by(models.Goal.id)
-        .all()
     )
+    if request.goal_id != None:
+        goals = goals.filter(models.Goal.id == request.goal_id)
+
+    else:
+        goals = goals.filter(models.Goal.is_completed == False)
+        
+    goals = goals.group_by(models.Goal.id).all()
     for goal in goals:
         if goal.completed_dailies == None:
             goal.completed_dailies = 0
     
     return { "goals": goals }
-
-
 
 @router.post("/get_title")
 def get_title(request: schemas.TitleRequest, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -138,10 +140,9 @@ def mark_complete(update_req: schemas.UpdateRequest, user_id: int = Depends(get_
     Marks selected dailies as complete or incomplete. If UpdateRequest.completed == True, marks as complete and vice versa
     """
     current_date = date.today()
-    print(update_req.completed)
     try:
         dailies = (
-            db.query(models.Daily)
+            db.query(models.Goal, models.Daily)
             .join(models.Daily.phase)
             .join(models.Phase.goal)
             .filter(
@@ -151,17 +152,34 @@ def mark_complete(update_req: schemas.UpdateRequest, user_id: int = Depends(get_
             )
             .all()
         )
-        print(len(dailies))
         if not dailies:
             return {
                 "message": "No dailies found",
                 "updated": 0,
             }
-
-        for daily in dailies:
+        goals_to_check = set[models.Goal]()
+        for goal, daily in dailies:
             daily.is_completed = update_req.completed
             daily.completed_date = current_date
+            goals_to_check.add(goal)
             
+        db.commit()
+        print(f"Goals: {goals_to_check}")
+        for goal in goals_to_check:
+            uncompleted_goals = (
+                db.query(models.Daily)
+                .join(models.Daily.phase)
+                .join(models.Phase.goal)
+                .filter(
+                    models.Goal.owner_id == user_id,
+                    models.Goal.id == goal.id,
+                    models.Daily.is_completed == False,
+                )
+                .count()
+            )
+            
+            goal.is_completed = uncompleted_goals == 0
+        
         db.commit()
         
         return {

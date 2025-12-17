@@ -129,4 +129,4 @@ class GoalProgressRead(BaseModel):
     goals: List[GoalProgress]
 
 class TitleRequest(BaseModel):
-    goal_id: int
+    goal_id: int | None
