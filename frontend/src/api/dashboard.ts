@@ -16,13 +16,14 @@ export async function getStats() {
     return res.json();
 }
 
-export async function getGoalProgress() {
+export async function getGoalProgress(goalId: number | null = null) {
     const res = await fetch(`${API_URL}/dashboard/goal_progress`, {
-        method: "GET",
+        method: "POST",
         headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
             "Content-Type": "application/json",
-        }
+        },
+        body: JSON.stringify({ goal_id: goalId })
     });
     if (!res.ok) {
         const data = await res.json();

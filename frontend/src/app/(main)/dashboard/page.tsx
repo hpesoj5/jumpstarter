@@ -2,27 +2,12 @@
 import { useState, useEffect } from "react";
 import { redirect } from "next/navigation";
 import Grid from "@mui/material/Grid";
+import { Goal, Stats } from "@/api/config";
 import { getStats, getGoalProgress } from "@/api/dashboard";
 import { isExpired } from "@/api/auth";
 import { StatCard } from "@/components/dashboard/StatCard";
-import { Daily } from "@/api/config";
 import { DailyTable, EmptyDailies } from "@/components/dashboard/DailyList";
 import { ProgressCard } from "@/components/dashboard/GoalProgressCard";
-
-interface Stats {
-    remaining_tasks_today: number | null,
-    completed_tasks_today: number | null,
-    ongoing_goals: number | null,
-    completed_goals: number | null,
-    tasks_today_list: Daily[],
-}
-
-export interface Goal {
-    title: string,
-    total_dailies: number,
-    completed_dailies: number,
-    deadline: string,
-};    
 
 export default function Dashboard() {
     // const router = useRouter();

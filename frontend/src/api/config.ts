@@ -25,3 +25,19 @@ export interface DailyTableProps {
     completed: boolean,
     // we will be displaying all tasks in a single page in a vertically scrollable table
 }
+
+export interface Stats {
+    remaining_tasks_today: number | null,
+    completed_tasks_today: number | null,
+    ongoing_goals: number | null,
+    completed_goals: number | null,
+    tasks_today_list: Daily[],
+};
+
+export interface Goal {
+    title: string,
+    total_dailies: number,
+    completed_dailies: number,
+    deadline: string,
+};    
+

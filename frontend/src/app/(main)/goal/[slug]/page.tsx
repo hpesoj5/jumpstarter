@@ -5,6 +5,9 @@ import { Daily } from "@/api/config";
 import { DailyTable } from "@/components/goals/GoalDetailsDailyList";
 import { getTitle, getDailies } from "@/api/dashboard";
 import { isExpired } from "@/api/auth";
+import { ProgressCard } from "@/components/dashboard/GoalProgressCard";
+import { getGoalProgress } from "@/api/dashboard";
+import { Goal } from "@/api/config";
 import Grid from "@mui/material/Grid";
 import { redirect } from "next/navigation";
 import Stack from "@mui/material/Stack";
@@ -17,6 +20,7 @@ export default function GoalDetails({ params, }: {params: Promise<{ slug: string
     const [title, setTitle] = useState<string>("");
     const [uncompletedDailies, setUncompletedDailies] = useState<Daily[]>([]);
     const [completedDailies, setCompletedDailies] = useState<Daily[]>([]);
+    const [goalData, setGoalData] = useState<Goal[]>([]);
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -33,10 +37,11 @@ export default function GoalDetails({ params, }: {params: Promise<{ slug: string
                 redirect("/dashboard");
             }
             setTitle(res);
-
+            const goal = await getGoalProgress(id);
+            setGoalData(goal.goals);
             const data_uncompleted = await getDailies(id, false);
             const data_completed = await getDailies(id, true);
-            setUncompletedDailies(data_uncompleted.dailies)
+            setUncompletedDailies(data_uncompleted.dailies);
             setCompletedDailies(data_completed.dailies);
         };
         loadStats();
@@ -64,6 +69,15 @@ export default function GoalDetails({ params, }: {params: Promise<{ slug: string
             <Grid container rowSpacing={5} columnSpacing={3} width="stretch" paddingRight={8}>
                 <Grid size={12}>
                     <Typography variant="h3">{title}</Typography>
+                </Grid>
+                <Grid size={{ lg: 8, sm: 12 }}>
+                    {/* calendar */}
+                </Grid>
+                <Grid size={{ lg: 4, sm: 12 }}>
+                    <ProgressCard
+                        goals={goalData}
+                        current_date={new Date()}
+                    />
                 </Grid>
                 <Grid size={{ lg: 6, sm: 12 }}>
                     <DailyTable

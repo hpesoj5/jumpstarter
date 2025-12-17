@@ -4,7 +4,7 @@ import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import { CaretLeftIcon } from "@phosphor-icons/react/dist/ssr/CaretLeft";
 import { CaretRightIcon } from "@phosphor-icons/react/dist/ssr/CaretRight";
-import { Goal } from "@/app/(main)/dashboard/page"
+import { Goal } from "@/api/config";
 import IconButton from "@mui/material/IconButton";
 import { PieChart } from "@mui/x-charts/PieChart";
 import Stack from "@mui/material/Stack";
@@ -47,14 +47,12 @@ export function ProgressCard({ goals, current_date }: ProgressCardProps) {
     const cornerRadius = innerRadius / 2;
     useEffect(() => {
         const loadGoalData = () => {
-            // console.log(`Goals: ${JSON.stringify(goals)}`);
-            if (!goals || goals.length === 0) return;
+            if (!goals || goals === undefined || goals.length === 0) return;
 
-            const g = goals[0]
+            const g = goals[0];
             const deadline = new Date(g.deadline);
             setNumGoals(goals.length);
             setPage(0);
-            console.log(`Length of goal array: ${goals.length}`)
             setDaysRemaining(Math.floor((deadline.getTime() - current_date.getTime()) / millisecondsInADay));
             setDailiesRemaining(g.total_dailies - g.completed_dailies);
             setProportion(g.completed_dailies / g.total_dailies);
@@ -71,7 +69,6 @@ export function ProgressCard({ goals, current_date }: ProgressCardProps) {
         else if (newPage >= numGoals) {
             newPage -= numGoals;
         }
-        console.log(`Old page: ${page}. New page: ${newPage}.`);
         setPage(newPage);
         const g = goals[newPage];
         const deadline = new Date(g.deadline);
