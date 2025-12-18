@@ -56,6 +56,23 @@ const COLOR_PALETTE = [
     '#7C3AED', // Deep Purple
 ];
 
+const convertToGrayscale = (color: string) => {
+    const hex = color.replace('#', '');
+
+    if (hex.length !== 6) {
+        throw new Error(`Invalid hex color: ${color}`);
+    }
+
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+
+    const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+    const grayHex = gray.toString(16).padStart(2, '0');
+
+    return `#${grayHex}${grayHex}${grayHex}`;
+};
+
 type PhaseColorMap = Record<string, string>;
 const getPhaseColor = (phaseTitle: string, phaseColorMap: PhaseColorMap) => {
     return phaseColorMap[phaseTitle] || '#e0e0e0'; // Use the map, fall back to gray
@@ -68,7 +85,7 @@ export const transformDailiesToEvents = (
     return dailiesGeneration.dailies.map((daily: Daily, index: number) => {
         const start = new Date(`${daily.dailies_date}T${daily.start_time}`);
         const end = addMinutes(start, daily.estimated_time_minutes);
-        const color = daily.is_completed ? '#e0e0e0' : getPhaseColor(daily.phase_title, phaseColorMap);
+        const color = daily.is_completed ? convertToGrayscale(getPhaseColor(daily.phase_title, phaseColorMap)) : getPhaseColor(daily.phase_title, phaseColorMap);
         return {
             title: `${daily.phase_title}: ${daily.task_description}`,
             start: start,
@@ -104,7 +121,7 @@ const TaskModal: React.FC<TaskModalProps> = ({
     }) as React.RefObject<HTMLDivElement | null>;
 
     if (!isOpen) return null;
-    
+
     return (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center p-4 z-50">
             <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all" ref={ref}>
