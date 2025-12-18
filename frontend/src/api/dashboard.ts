@@ -49,6 +49,22 @@ export async function getTitle(goalId: number) {
     return res.json();
 }
 
+export async function getPhases(goalId: number) {
+    const res = await fetch(`${API_URL}/dashboard/get_phases`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ goal_id: goalId })
+    });
+    if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.detail || `Failed to get phases for goal ${goalId}`);
+    }
+    return res.json();
+}
+
 export async function getDailies(goalId: number, completed: boolean) {
     const res = await fetch(`${API_URL}/dashboard/get_dailies`, {
         method: "POST",

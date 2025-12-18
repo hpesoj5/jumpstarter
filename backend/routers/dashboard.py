@@ -110,6 +110,21 @@ def get_title(request: schemas.TitleRequest, user_id: int = Depends(get_current_
         
     return title
 
+@router.post("/get_phases", response_model = schemas.PhaseResponse)
+def get_phases(request: schemas.TitleRequest, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
+    goal_phases = (
+        db.query(models.Phase.title)
+        .join(models.Phase.goal)
+        .filter(
+            models.Goal.owner_id == user_id,
+            models.Goal.id == request.goal_id,
+        )
+        .order_by(models.Phase.start_date)
+        .all()
+    )
+    goal_phases = [phase[0] for phase in goal_phases]
+    return schemas.PhaseResponse(goal_phases=goal_phases)
+
 @router.post("/get_dailies", response_model = schemas.DailiesResponse)
 def get_dailies(request: schemas.DailiesRequest, user_id: int = Depends(get_current_user), db: Session = Depends(get_db)):
     """
@@ -128,6 +143,7 @@ def get_dailies(request: schemas.DailiesRequest, user_id: int = Depends(get_curr
         .order_by(models.Daily.dailies_date)
         .all()
     )
+    
     dailies_list = schemas.DailiesResponse(
         dailies=[schemas.DailyRead.model_validate(task, from_attributes=True) for task in dailies_list]
     )

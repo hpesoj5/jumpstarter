@@ -112,6 +112,9 @@ class DailiesRequest(BaseModel):
     goal_id: int
     completed: bool
     
+class PhaseResponse(BaseModel):
+    goal_phases: List[str]
+    
 class DailiesResponse(BaseModel):
     dailies: List[DailyRead]
 

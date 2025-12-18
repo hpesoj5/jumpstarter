@@ -33,7 +33,7 @@ function DonutCenterLabel({ children }: { children: ReactNode }) {
     );
 };
 
-export function ProgressCard({ goals, current_date }: ProgressCardProps) {
+export default function ProgressCard({ goals, current_date }: ProgressCardProps) {
     const millisecondsInADay = 1000 * 60 * 60 * 24;
     const [numGoals, setNumGoals] = useState<number>(0);
     const [page, setPage] = useState<number>(0);

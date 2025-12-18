@@ -5,9 +5,9 @@ import Grid from "@mui/material/Grid";
 import { Goal, Stats } from "@/api/config";
 import { getStats, getGoalProgress } from "@/api/dashboard";
 import { isExpired } from "@/api/auth";
-import { StatCard } from "@/components/dashboard/StatCard";
+import StatCard from "@/components/dashboard/StatCard";
 import { DailyTable, EmptyDailies } from "@/components/dashboard/DailyList";
-import { ProgressCard } from "@/components/dashboard/GoalProgressCard";
+import ProgressCard from "@/components/dashboard/GoalProgressCard";
 
 export default function Dashboard() {
     // const router = useRouter();

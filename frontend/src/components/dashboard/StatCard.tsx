@@ -10,7 +10,7 @@ export interface CardValue {
     sx?: SxProps,
 }
 
-export function StatCard({stat, value, sx}: CardValue) {
+export default function StatCard({stat, value, sx}: CardValue) {
 
     return (
         <Card sx={sx}>
