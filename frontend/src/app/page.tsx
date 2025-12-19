@@ -51,11 +51,9 @@ export default function HomePage() {
                 </div>
                 <Carousel
                     images={[
-                    "https://cdn.stickerrs.com/StickerPacks/tQsH9FxPP7CQJvy9cIb3/23040BD3-35F1-4C21-A4E9-E5077EC5C91E_100x100.png",
-                    "https://cdn.stickerrs.com/StickerPacks/tQsH9FxPP7CQJvy9cIb3/3CE54C4C-C0A7-4F47-8A3B-955ECC66E11A_100x100.png",
-                    "https://cdn.stickerrs.com/StickerPacks/tQsH9FxPP7CQJvy9cIb3/25C9852E-5B73-4273-AC62-B1F795F5F5E8_100x100.png",
-                    "https://cdn.stickerrs.com/StickerPacks/tQsH9FxPP7CQJvy9cIb3/B7A019AC-7D90-44BC-BAFC-5785AD778770_100x100.png",
-                    "https://cdn.stickerrs.com/StickerPacks/tQsH9FxPP7CQJvy9cIb3/ED79660D-46F3-4740-B6F1-616A638D56F8_100x100.png",
+                    "/images/goal_view.png",
+                    "/images/goal_definition.png",
+                    "/images/phase_definition.png",
                     ]}
                 />
 

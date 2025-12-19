@@ -70,12 +70,12 @@ export const Carousel: React.FC<CarouselProps> = ({
             cursor = "default";
         } else if (index === prevIndex) {
             className +=
-                " z-[1] scale-90 -translate-x-[18%] rotate-[-6deg] hover:scale-[0.92]";
+                " z-[1] scale-85 -translate-x-[10%] rotate-[-6deg] hover:scale-[0.92]";
             opacity = 0.6;
             cursor = "pointer";
         } else if (index === nextIndex) {
             className +=
-                " z-[1] scale-90 translate-x-[18%] rotate-[6deg] hover:scale-[0.92]";
+                " z-[1] scale-85 translate-x-[10%] rotate-[6deg] hover:scale-[0.92]";
             opacity = 0.6;
             cursor = "pointer";
         }
@@ -89,12 +89,12 @@ export const Carousel: React.FC<CarouselProps> = ({
 
     return (
         <div
-            className="relative w-full max-w-lg mx-auto rounded-lg aspect-[4/3] perspective-100"
+            className="relative w-full max-w-3xl mx-auto rounded-lg aspect-[4/3] perspective-100 overflow-visible"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
             {/* Image Display Area */}
-            <div className="relative w-full h-full">
+            <div className="relative w-full h-full aspect-[4/3]">
                 {images.map((image, index) => {
                     const { className, opacity, cursor } =
                         getImageStyles(index);
