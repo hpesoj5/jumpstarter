@@ -1,1 +1,1 @@
-from backend.models import User, Goal, Phase, Daily, ChatSession
+from models import User, Goal, Phase, Daily, ChatSession

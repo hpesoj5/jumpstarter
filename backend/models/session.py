@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, LargeBinary, String, CheckConstraint
 from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.orm import relationship
-from backend.db.session import Base
+from db.session import Base
 
 phase_tag_list =  ["define_goal", "get_prerequisites", "generate_phases", "refine_phases", "generate_dailies"]
           

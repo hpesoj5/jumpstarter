@@ -3,16 +3,16 @@ import json
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
-from backend.utils import (get_current_user,
+from utils import (get_current_user,
                             insert_user, insert_goal, insert_phases, insert_dailies,
                             insert_session, get_user_session, change_user_session,
                             update_session_data, update_session_phase_tag, update_session_goal, update_session_prereq, update_session_phases, update_session_dailies,
                             get_model_latest_response, update_session_chat_history,
                             get_llm_response, generate_dailies, parse_response
                             )
-from backend.db import get_db
+from db import get_db
 
-from backend.schemas import (FollowUp, APIResponse, APIRequest, ConfirmRequest,
+from schemas import (FollowUp, APIResponse, APIRequest, ConfirmRequest,
                             DefinitionsCreate, 
                             GoalPrerequisites, 
                             PhaseGeneration,

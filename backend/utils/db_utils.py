@@ -7,13 +7,13 @@ from sqlalchemy.orm import Session, joinedload
 
 from google.genai.types import Content, Part
 
-from backend.utils import (hash_password,
+from utils import (hash_password,
                            
                            )
-from backend.db import get_db
+from db import get_db
 
-from backend.models import User, ChatSession, Goal, Phase, Daily
-from backend.schemas import (FollowUp,
+from models import User, ChatSession, Goal, Phase, Daily
+from schemas import (FollowUp,
                             DefinitionsCreate,
                             GoalPrerequisites, 
                             PhaseGeneration,

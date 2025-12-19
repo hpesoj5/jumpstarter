@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import func, case
 from sqlalchemy.orm import Session
 # from sqlalchemy.exc import SQLAlchemyError
-from backend.db import get_db
-from backend import models, schemas
-from backend.utils import get_current_user
+from db import get_db
+import models, schemas
+from utils import get_current_user
 from datetime import date
 
 router = APIRouter(prefix="/dashboard", tags=["Dashboard"])

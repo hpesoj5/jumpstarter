@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Literal, Union
-from backend.schemas.goal import DefinitionsCreate, GoalPrerequisites, PhaseGeneration, DailiesGeneration, DailiesPost
+from schemas.goal import DefinitionsCreate, GoalPrerequisites, PhaseGeneration, DailiesGeneration, DailiesPost
 
 # possibly add response models here
 class FollowUp(BaseModel):

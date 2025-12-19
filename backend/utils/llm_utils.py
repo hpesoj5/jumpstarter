@@ -5,16 +5,16 @@ from fastapi import Depends
 from pydantic import TypeAdapter
 from sqlalchemy.orm import Session
 
-from backend.db import get_db
+from db import get_db
 
-from backend.models import ChatSession
-from backend.schemas import (FollowUp,
+from models import ChatSession
+from schemas import (FollowUp,
                             DefinitionsCreate, 
                             GoalPrerequisites, 
                             PhaseGeneration, PhaseCreate,
                             DailiesGeneration, DailiesPost,)
-#from backend.utils.system_instruction import SYSTEM_INSTRUCTION, DAILIES_GENERATION_PROMPT
-from backend.utils.instruction_chain import BASE_INSTRUCTION, PHASE_INSTRUCTIONS, SEARCH_INSTRUCTION, DAILIES_GENERATION_INSTRUCTION
+
+from utils.instruction_chain import BASE_INSTRUCTION, PHASE_INSTRUCTIONS, SEARCH_INSTRUCTION, DAILIES_GENERATION_INSTRUCTION
 
 from google import genai
 from google.genai.types import Content, Part, Tool, GoogleSearch

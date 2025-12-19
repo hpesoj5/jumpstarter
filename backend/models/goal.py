@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey, Date, Boolean, Float, Time
 from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import relationship
-from backend.db.session import Base
+from db.session import Base
 
 class Goal(Base):
     __tablename__ = "goals"
