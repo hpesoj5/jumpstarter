@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 
 export const metadata = {
     title: "JumpStarter",
-    description: "Plan and track your goals with AI",
+    description: "Build Tomorrow, Today",
 };
 
 export default function RootLayout(
