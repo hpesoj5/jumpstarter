@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 
 export const metadata = {
     title: "JumpStarter",
-    description: "Build Tomorrow, Today",
+    description: "Build Your Tomorrow, Today",
 };
 
 export default function RootLayout(
