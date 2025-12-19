@@ -7,3 +7,5 @@ backend/alembic.ini
 notebooks
 tests
 .prettierrc
+db_test.py
+tempCodeRunnerFile.py
