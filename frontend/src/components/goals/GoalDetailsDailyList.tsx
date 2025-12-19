@@ -5,14 +5,12 @@ import Card from "@mui/material/Card";
 import Checkbox from "@mui/material/Checkbox";
 import { DailyTableProps } from "@/api/config";
 import dayjs from "dayjs";
-import Divider from "@mui/material/Divider";
 import { markComplete } from "@/api/dashboard";
 import Stack from "@mui/material/Stack";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
 import TableContainer from "@mui/material/TableContainer";
-import TableFooter from "@mui/material/TableFooter";
 import TableHead from "@mui/material/TableHead";
 import TablePagination from "@mui/material/TablePagination";
 import { TablePaginationActionsProps } from "@mui/material/TablePaginationActions";
@@ -20,7 +18,7 @@ import TableRow from "@mui/material/TableRow";
 import Typography from "@mui/material/Typography";
 import { useSelection } from "@/hooks/useSelection";
 
-const displayNothing = ({ from, to, count }) => {
+const displayNothing = () => {
     return (
         <>
         </>
