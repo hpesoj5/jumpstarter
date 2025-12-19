@@ -53,7 +53,7 @@ export function DailyTable({ count, page, rows, rowsPerPage }: DailyTableProps) 
     };
 
     return (
-        <Card>
+        <Card sx={{ borderRadius: 4, boxShadow: 10 }}>
             <TableContainer sx={{ height: "70vh", overflow: "auto" }}>
                 <Table stickyHeader>
                     <TableHead>

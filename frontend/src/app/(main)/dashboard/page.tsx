@@ -41,16 +41,16 @@ export default function Dashboard() {
     return (
         <Grid container spacing={3}>
             <Grid size={{ lg: 3, sm: 6, xs: 12 }}>
-                <StatCard stat="Remaining Tasks Today" value={stats?.remaining_tasks_today} sx={{ height: '100%' }} />
+                <StatCard stat="Remaining Tasks Today" value={stats?.remaining_tasks_today} />
             </Grid>
             <Grid size={{ lg: 3, sm: 6, xs: 12 }}>
-                <StatCard stat="Completed Tasks Today" value={stats?.completed_tasks_today} sx={{ height: '100%' }} />
+                <StatCard stat="Completed Tasks Today" value={stats?.completed_tasks_today} />
             </Grid>
             <Grid size={{ lg: 3, sm: 6, xs: 12 }}>
-                <StatCard stat="Ongoing Goals" value={stats?.ongoing_goals} sx={{ height: '100%' }} />
+                <StatCard stat="Ongoing Goals" value={stats?.ongoing_goals} />
             </Grid>
             <Grid size={{ lg: 3, sm: 6, xs: 12 }}>
-                <StatCard stat="Completed Goals" value={stats?.completed_goals} sx={{ height: '100%' }} />
+                <StatCard stat="Completed Goals" value={stats?.completed_goals} />
             </Grid>
             <Grid size={{ lg: 8, sm: 12 }}>
                 {(stats.remaining_tasks_today ?? 0) > 0 ? (

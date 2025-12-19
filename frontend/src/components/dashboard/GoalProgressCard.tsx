@@ -80,7 +80,7 @@ export default function ProgressCard({ goals, current_date }: ProgressCardProps)
 
     return (
         <>
-            {numGoals > 0 && <Card>
+            {numGoals > 0 && <Card sx={{ borderRadius: 3, boxShadow: 5 }}>
                 <Stack
                     direction="row" 
                     sx={{

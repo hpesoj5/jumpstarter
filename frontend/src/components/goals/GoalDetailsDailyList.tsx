@@ -55,7 +55,7 @@ export function DailyTable({ count, page, rows, rowsPerPage, completed }: DailyT
     return (
         <Stack direction="column" spacing={1}>
             <Typography variant="h4">{completed ? "Completed Tasks" : "Uncompleted Tasks"}</Typography>
-            <Card>
+            <Card sx={{ borderRadius: 3, boxShadow: 5 }}>
                 <TableContainer sx={{ height: "35vh", overflow: "auto" }}>
                     <Table stickyHeader>
                         <TableHead>
