@@ -11,7 +11,7 @@ app.include_router(goals.router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # frontend address
+    allow_origins=["http://localhost:3000", "https://jumpstarter-drmjv7hgf-hpesoj5s-projects.vercel.app"],  # frontend address
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
