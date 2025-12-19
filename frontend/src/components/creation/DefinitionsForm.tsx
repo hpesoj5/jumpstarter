@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { DefinitionsCreate } from "@/types/goals.d";
-import { Sparkles, Edit, MessageSquare } from "lucide-react";
+import { Sparkles, Edit } from "lucide-react";
 
 type DefinitionsFormProps = {
     data: DefinitionsCreate;

@@ -1,9 +1,8 @@
-import { ReactNode } from "react";
 import "@/styles/globals.css";
 
 export const metadata = {
-    title: "GoalTracker",
-    description: "Track your goals and progress visually",
+    title: "JumpStarter",
+    description: "Plan and track your goals with AI",
 };
 
 export default function RootLayout(

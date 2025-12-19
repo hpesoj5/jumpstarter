@@ -51,7 +51,7 @@ export default function Navbar() {
 
                 {/* Center - App name */}
                 <h1 className="text-xl font-semibold text-gray-800">
-                    GoalTracker
+                    JumpStarter
                 </h1>
 
                 {/* Right - User */}
