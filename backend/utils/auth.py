@@ -6,7 +6,8 @@ import datetime
 import os
 from dotenv import load_dotenv
 
-load_dotenv()
+if os.getenv("RAILWAY_ENVIRONMENT_NAME") is None:
+    load_dotenv()
 
 pwd_context = CryptContext(schemes=["bcrypt"])
 SECRET_KEY = os.getenv("SECRET_KEY", "secret_key")

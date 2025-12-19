@@ -23,9 +23,9 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 
-# backend_dir = Path(__file__).resolve().parent.parent
-# load_dotenv(backend_dir / ".env")
-load_dotenv()
+if os.getenv("RAILWAY_ENVIRONMENT_NAME") is None:
+    load_dotenv()
+    
 DEFINITIONS_API_KEY=os.getenv("DEFINITIONS_API_KEY")
 PREREQ_API_KEY=os.getenv("PREREQ_API_KEY")
 PHASES_API_KEY=os.getenv("PHASES_API_KEY")
